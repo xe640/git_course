@@ -129,6 +129,9 @@ int main(int, char **) {
 
     static ImVec2 cameraYawPitch = ImVec2(.0f, .0f);
     static ImVec4 clear_colour = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+    static double lastMouseX = 0.0;
+    static double lastMouseY = 0.0;
+    static float look_sensitivity = 1.0f;
 
     while(!glfwWindowShouldClose(window))
     {
@@ -140,7 +143,14 @@ int main(int, char **) {
         }
 
         if(!io.WantCaptureMouse) {
-
+            int mouseClickState = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
+            if (mouseClickState == GLFW_PRESS){
+                static double curMouseX, curMouseY;
+                glfwGetCursorPos(window, &curMouseX, &curMouseY);
+                cameraYawPitch.x += (curMouseX - lastMouseX) * look_sensitivity * 0.1f;
+                cameraYawPitch.y -= (curMouseY - lastMouseY) * look_sensitivity * 0.1f;
+            }
+            glfwGetCursorPos(window, &lastMouseX, &lastMouseY);
         }
         if(!io.WantCaptureKeyboard) {
 
@@ -154,6 +164,7 @@ int main(int, char **) {
             ImGui::Begin("info");
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
             ImGui::Text("Camera angles (%.1f, %.1f)", cameraYawPitch.x, cameraYawPitch.y);
+            ImGui::DragFloat("Look sensitivity", &look_sensitivity, 0.01f);
             ImGui::ColorEdit3("Background colour", (float*)&clear_colour);
             ImGui::End();
         }
