@@ -122,10 +122,13 @@ int main(int, char **) {
     GLuint shaderProgram = baseShaderProgram();
     glUseProgram(shaderProgram);
     GLuint VAO;
-    if(shaderSuccess) {
+    if(shaderSuccess) {  // Empty vertex array object, it is still required despite no actual vertex data being used
         glGenVertexArrays(1, &VAO);
         glBindVertexArray(VAO);
     }
+
+    static ImVec2 cameraYawPitch = ImVec2(.0f, .0f);
+    static ImVec4 clear_colour = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
     while(!glfwWindowShouldClose(window))
     {
@@ -147,9 +150,15 @@ int main(int, char **) {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        ImGui::ShowDemoWindow();
+        {
+            ImGui::Begin("info");
+            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+            ImGui::Text("Camera angles (%.1f, %.1f)", cameraYawPitch.x, cameraYawPitch.y);
+            ImGui::ColorEdit3("Background colour", (float*)&clear_colour);
+            ImGui::End();
+        }
 
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClearColor(clear_colour.x, clear_colour.y, clear_colour.z, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
         if(shaderSuccess) {
             glDrawArrays(GL_TRIANGLES, 0, 3);
