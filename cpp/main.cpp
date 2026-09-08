@@ -7,8 +7,74 @@
 #include <imgui/imgui_impl_glfw.h>
 #include <imgui/imgui_impl_opengl3.h>
 
+const char *vertexShaderSource = "#version 330 core\n"
+    "void main()\n"
+    "{\n"
+    "   int x = gl_VertexID % 3;\n"
+    "   x -= 1;\n"
+    "   float y = 0.5 - abs(x);\n"
+    "   gl_Position = vec4(x * 0.5, y, 0.0, 1.0);\n"
+    "}\0";
+
+const char *fragmentShaderSource = "#version 330 core \n"
+    "out vec4 FragColor;\n"
+
+    "void main()\n"
+    "{\n"
+    "    FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
+    "} \0";
+
+static bool shaderSuccess = true;
+
 void onWindowResize(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
+}
+
+GLuint baseShaderProgram() {
+    GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
+    glCompileShader(vertexShader);
+
+    int  success;
+    char infoLog[512];
+    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
+
+    if(!success)
+    {
+        glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
+        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
+        shaderSuccess = false;
+    }
+
+    GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
+    glCompileShader(fragmentShader);
+    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
+
+    if(!success)
+    {
+        glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
+        std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
+        shaderSuccess = false;
+    }
+
+    GLuint shaderProgram = glCreateProgram();
+
+    glAttachShader(shaderProgram, vertexShader);
+    glAttachShader(shaderProgram, fragmentShader);
+    glLinkProgram(shaderProgram);
+
+    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
+    if(!success) {
+        glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
+        std::cout << "ERROR::SHADER::_LINKING_FAILED\n" << infoLog << std::endl;
+        shaderSuccess = false;
+    }
+
+    glDeleteShader(vertexShader);
+    glDeleteShader(fragmentShader);
+
+    return shaderProgram;
 }
 
 int main(int, char **) {
@@ -39,7 +105,7 @@ int main(int, char **) {
     glfwSetFramebufferSizeCallback(window, onWindowResize);
 
     IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
+    ImGuiContext* context = ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
@@ -52,6 +118,14 @@ int main(int, char **) {
 
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init(glsl_version);
+
+    GLuint shaderProgram = baseShaderProgram();
+    glUseProgram(shaderProgram);
+    GLuint VAO;
+    if(shaderSuccess) {
+        glGenVertexArrays(1, &VAO);
+        glBindVertexArray(VAO);
+    }
 
     while(!glfwWindowShouldClose(window))
     {
@@ -75,6 +149,12 @@ int main(int, char **) {
 
         ImGui::ShowDemoWindow();
 
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+        if(shaderSuccess) {
+            glDrawArrays(GL_TRIANGLES, 0, 3);
+        }
+
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         glfwSwapBuffers(window);
@@ -82,7 +162,7 @@ int main(int, char **) {
 
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
-    ImGui::DestroyContext();
+    ImGui::DestroyContext(context);
 
     glfwDestroyWindow(window);
     glfwTerminate();
