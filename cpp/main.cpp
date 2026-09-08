@@ -6,75 +6,10 @@
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_glfw.h>
 #include <imgui/imgui_impl_opengl3.h>
-
-const char *vertexShaderSource = "#version 330 core\n"
-    "void main()\n"
-    "{\n"
-    "   int x = gl_VertexID % 3;\n"
-    "   x -= 1;\n"
-    "   float y = 0.5 - abs(x);\n"
-    "   gl_Position = vec4(x * 0.5, y, 0.0, 1.0);\n"
-    "}\0";
-
-const char *fragmentShaderSource = "#version 330 core \n"
-    "out vec4 FragColor;\n"
-
-    "void main()\n"
-    "{\n"
-    "    FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-    "} \0";
-
-static bool shaderSuccess = true;
+#include "src/shader.h"
 
 void onWindowResize(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
-}
-
-GLuint baseShaderProgram() {
-    GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-    glCompileShader(vertexShader);
-
-    int  success;
-    char infoLog[512];
-    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-
-    if(!success)
-    {
-        glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
-        shaderSuccess = false;
-    }
-
-    GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-    glCompileShader(fragmentShader);
-    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-
-    if(!success)
-    {
-        glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
-        shaderSuccess = false;
-    }
-
-    GLuint shaderProgram = glCreateProgram();
-
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
-    glLinkProgram(shaderProgram);
-
-    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-    if(!success) {
-        glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-        std::cout << "ERROR::SHADER::_LINKING_FAILED\n" << infoLog << std::endl;
-        shaderSuccess = false;
-    }
-
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
-
-    return shaderProgram;
 }
 
 int main(int, char **) {
@@ -119,13 +54,12 @@ int main(int, char **) {
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init(glsl_version);
 
-    GLuint shaderProgram = baseShaderProgram();
-    glUseProgram(shaderProgram);
+    static Shader triangleShader = Shader("../shaders/triangleVS.glsl", "../shaders/triangleFS.glsl");
+    triangleShader.use();
+
     GLuint VAO;
-    if(shaderSuccess) {  // Empty vertex array object, it is still required despite no actual vertex data being used
-        glGenVertexArrays(1, &VAO);
-        glBindVertexArray(VAO);
-    }
+    glGenVertexArrays(1, &VAO);
+    glBindVertexArray(VAO);
 
     static ImVec2 cameraYawPitch = ImVec2(.0f, .0f);
     static ImVec4 clear_colour = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
@@ -171,9 +105,7 @@ int main(int, char **) {
 
         glClearColor(clear_colour.x, clear_colour.y, clear_colour.z, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
-        if(shaderSuccess) {
-            glDrawArrays(GL_TRIANGLES, 0, 3);
-        }
+        glDrawArrays(GL_TRIANGLES, 0, 3);
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

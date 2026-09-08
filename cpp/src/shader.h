@@ -27,4 +27,4 @@ private:
     std::unordered_map<std::string, GLuint> uniform_cache;
 };
 
-#endif;
+#endif
