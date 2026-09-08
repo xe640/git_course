@@ -8,7 +8,12 @@
 #include <imgui/imgui_impl_opengl3.h>
 #include "src/shader.h"
 
+static double windowWidth;
+static double windowHeight;
+
 void onWindowResize(GLFWwindow* window, int width, int height) {
+    windowWidth = width;
+    windowHeight = height; 
     glViewport(0, 0, width, height);
 }
 
@@ -29,6 +34,9 @@ int main(int, char **) {
         return -1;
     }
     glfwMakeContextCurrent(window);
+
+    windowWidth = 800 * main_scale;
+    windowHeight = 600 * main_scale; 
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
@@ -67,6 +75,7 @@ int main(int, char **) {
     static double lastMouseX = 0.0;
     static double lastMouseY = 0.0;
     static float look_sensitivity = 1.0f;
+    static bool lastMousePress = false;
 
     while(!glfwWindowShouldClose(window))
     {
@@ -80,10 +89,18 @@ int main(int, char **) {
         if(!io.WantCaptureMouse) {
             int mouseClickState = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
             if (mouseClickState == GLFW_PRESS){
+                glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
                 static double curMouseX, curMouseY;
                 glfwGetCursorPos(window, &curMouseX, &curMouseY);
                 cameraYawPitch.x += (curMouseX - lastMouseX) * look_sensitivity * 0.1f;
                 cameraYawPitch.y -= (curMouseY - lastMouseY) * look_sensitivity * 0.1f;
+                lastMousePress = true;
+            } else {
+                glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+                if(lastMousePress) {
+                    glfwSetCursorPos(window, windowWidth * 0.5, windowHeight * 0.5);
+                }
+                lastMousePress = false;
             }
             glfwGetCursorPos(window, &lastMouseX, &lastMouseY);
         }
