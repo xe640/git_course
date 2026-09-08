@@ -63,6 +63,7 @@ int main(int, char **) {
 
     static ImVec2 cameraYawPitch = ImVec2(.0f, .0f);
     static ImVec4 clear_colour = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+    static ImVec4 triColour = ImVec4(0.2f, 0.2f, 0.2f, 1.0f);
     static double lastMouseX = 0.0;
     static double lastMouseY = 0.0;
     static float look_sensitivity = 1.0f;
@@ -100,11 +101,14 @@ int main(int, char **) {
             ImGui::Text("Camera angles (%.1f, %.1f)", cameraYawPitch.x, cameraYawPitch.y);
             ImGui::DragFloat("Look sensitivity", &look_sensitivity, 0.01f);
             ImGui::ColorEdit3("Background colour", (float*)&clear_colour);
+            ImGui::ColorEdit3("Triangle colour", (float*)&triColour);
             ImGui::End();
         }
 
         glClearColor(clear_colour.x, clear_colour.y, clear_colour.z, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
+
+        triangleShader.setVec3Uniform("inColour", triColour.x, triColour.y, triColour.z);
         glDrawArrays(GL_TRIANGLES, 0, 3);
 
         ImGui::Render();
