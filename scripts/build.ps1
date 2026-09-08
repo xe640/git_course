@@ -3,6 +3,7 @@ Set-StrictMode -Version Latest
 $RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 $CppDir = Join-Path $RepoRoot "cpp"
 $IncludeDir = Join-Path $CppDir "include"
+$ImguiDir = Join-Path $CppDir "include/imgui"
 $LibDir = Join-Path $CppDir "lib"
 $BuildDir = Join-Path $RepoRoot "build"
 
@@ -18,6 +19,7 @@ $src = @()
 $main = Join-Path $CppDir "main.cpp"
 if (Test-Path $main) { $src += $main }
 $src += Get-ChildItem -Path (Join-Path $CppDir "src") -Include *.c,*.cpp -Recurse -File -ErrorAction SilentlyContinue | ForEach-Object { $_.FullName }
+$src += Get-ChildItem -Path ($ImguiDir) -Include *.c,*.cpp -Recurse -File -ErrorAction SilentlyContinue | ForEach-Object { $_.FullName }
 $src = $src | Select-Object -Unique
 
 if ($src.Count -eq 0) {
@@ -46,12 +48,16 @@ $compileArgs = @(
 	@($src),
 	"-lglfw3",
 	"-lopengl32",
+	"-luser32",
+	"-lgdi32",
+	"-lkernel32",
+	"-lshell32",
 	"-o",
 	$outExe
 )
 
 Write-Host "Using g++ at:" $gpp.Path
-Write-Host "Building with hardcoded libs: -lglfw3 -lopengl32"
+Write-Host "Building with args:" $compileArgs
 Write-Host "Sources:" ($src -join ' ')
 
 & $gpp.Path @compileArgs
