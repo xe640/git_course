@@ -24,7 +24,7 @@ public :
     void setVec4Uniform(const std::string name, float x, float y, float z, float w);
 
 private:
-    std::unordered_map<std::string, GLuint> uniform_cache;
+    std::unordered_map<std::string, GLint> uniform_cache;
 };
 
 #endif
