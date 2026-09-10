@@ -7,13 +7,9 @@
 #include <imgui/imgui_impl_glfw.h>
 #include <imgui/imgui_impl_opengl3.h>
 #include "src/shader.h"
-
-static double windowWidth;
-static double windowHeight;
+#include "src/gui_render.h"
 
 void onWindowResize(GLFWwindow* window, int width, int height) {
-    windowWidth = width;
-    windowHeight = height; 
     glViewport(0, 0, width, height);
 }
 
@@ -34,9 +30,6 @@ int main(int, char **) {
         return -1;
     }
     glfwMakeContextCurrent(window);
-
-    windowWidth = 800 * main_scale;
-    windowHeight = 600 * main_scale; 
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
@@ -69,68 +62,25 @@ int main(int, char **) {
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
 
-    static ImVec2 cameraYawPitch = ImVec2(.0f, .0f);
-    static ImVec4 clear_colour = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-    static ImVec4 triColour = ImVec4(0.2f, 0.2f, 0.2f, 1.0f);
-    static double lastMouseX = 0.0;
-    static double lastMouseY = 0.0;
-    static float look_sensitivity = 1.0f;
-    static bool lastMousePress = false;
-
     while(!glfwWindowShouldClose(window))
     {
-        glfwPollEvents();
+        GUIRender::UpdateInput(io, window);
+        GUIRender::DrawGUI(io);
+        
+        glClearColor(GUIRender::data.clearColour.x, GUIRender::data.clearColour.y, GUIRender::data.clearColour.z, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        triangleShader.setVec3Uniform("inColour", GUIRender::data.triColour.x, GUIRender::data.triColour.y, GUIRender::data.triColour.z);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+
+        GUIRender::RenderGUI();
+        glfwSwapBuffers(window);
+
         if (glfwGetWindowAttrib(window, GLFW_ICONIFIED) != 0)
         {
             ImGui_ImplGlfw_Sleep(10);
             continue;
         }
-
-        if(!io.WantCaptureMouse) {
-            int mouseClickState = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
-            if (mouseClickState == GLFW_PRESS){
-                glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-                static double curMouseX, curMouseY;
-                glfwGetCursorPos(window, &curMouseX, &curMouseY);
-                cameraYawPitch.x += (curMouseX - lastMouseX) * look_sensitivity * 0.1f;
-                cameraYawPitch.y -= (curMouseY - lastMouseY) * look_sensitivity * 0.1f;
-                lastMousePress = true;
-            } else {
-                glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-                if(lastMousePress) {
-                    glfwSetCursorPos(window, windowWidth * 0.5, windowHeight * 0.5);
-                }
-                lastMousePress = false;
-            }
-            glfwGetCursorPos(window, &lastMouseX, &lastMouseY);
-        }
-        if(!io.WantCaptureKeyboard) {
-
-        }
-
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
-
-        {
-            ImGui::Begin("info");
-            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
-            ImGui::Text("Camera angles (%.1f, %.1f)", cameraYawPitch.x, cameraYawPitch.y);
-            ImGui::DragFloat("Look sensitivity", &look_sensitivity, 0.01f);
-            ImGui::ColorEdit3("Background colour", (float*)&clear_colour);
-            ImGui::ColorEdit3("Triangle colour", (float*)&triColour);
-            ImGui::End();
-        }
-
-        glClearColor(clear_colour.x, clear_colour.y, clear_colour.z, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
-
-        triangleShader.setVec3Uniform("inColour", triColour.x, triColour.y, triColour.z);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
-
-        ImGui::Render();
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-        glfwSwapBuffers(window);
     }
 
     ImGui_ImplOpenGL3_Shutdown();
