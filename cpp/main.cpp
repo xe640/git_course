@@ -1,12 +1,13 @@
 #include <iostream>
 #include <stdio.h>
 
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-#include <imgui/imgui.h>
-#include <imgui/imgui_impl_glfw.h>
-#include <imgui/imgui_impl_opengl3.h>
-#include "src/shader.h"
+#include "include/glad/glad.h"
+#include "include/GLFW/glfw3.h"
+#include "include/imgui/imgui.h"
+#include "include/imgui/imgui_impl_glfw.h"
+#include "include/imgui/imgui_impl_opengl3.h"
+
+#include "src/renderer_gl.h"
 #include "src/gui_render.h"
 
 void onWindowResize(GLFWwindow* window, int width, int height) {
@@ -55,23 +56,14 @@ int main(int, char **) {
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init(glsl_version);
 
-    static Shader triangleShader = Shader("../shaders/triangleVS.glsl", "../shaders/triangleFS.glsl");
-    triangleShader.use();
-
-    GLuint VAO;
-    glGenVertexArrays(1, &VAO);
-    glBindVertexArray(VAO);
+    GLRenderer::Initialize();
 
     while(!glfwWindowShouldClose(window))
     {
         GUIRender::UpdateInput(io, window);
         GUIRender::DrawGUI(io);
         
-        glClearColor(GUIRender::data.clearColour.x, GUIRender::data.clearColour.y, GUIRender::data.clearColour.z, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
-
-        triangleShader.setVec3Uniform("inColour", GUIRender::data.triColour.x, GUIRender::data.triColour.y, GUIRender::data.triColour.z);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        GLRenderer::Render(GUIRender::data);
 
         GUIRender::RenderGUI();
         glfwSwapBuffers(window);
@@ -82,6 +74,8 @@ int main(int, char **) {
             continue;
         }
     }
+
+    GLRenderer::CleanUp();
 
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();

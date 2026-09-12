@@ -1,7 +1,10 @@
-#include <GLFW/glfw3.h>
-#include <imgui/imgui.h>
-#include <imgui/imgui_impl_glfw.h>
-#include <imgui/imgui_impl_opengl3.h>
+#ifndef GUI_RENDER_H
+#define GUI_RENDER_H
+
+#include "../include/GLFW/glfw3.h"
+#include "../include/imgui/imgui.h"
+#include "../include/imgui/imgui_impl_glfw.h"
+#include "../include/imgui/imgui_impl_opengl3.h"
 
 struct gui_data {
     ImVec2 cameraYawPitch;
@@ -23,3 +26,5 @@ public:
     static void DrawGUI(ImGuiIO& io);
     static void RenderGUI();
 };
+
+#endif

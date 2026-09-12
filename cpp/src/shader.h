@@ -1,7 +1,7 @@
 #ifndef SHADER_H
 #define SHADER_H
 
-#include <glad/glad.h> // include glad to get all the required OpenGL headers
+#include "../include/glad/glad.h"
   
 #include <string>
 #include <fstream>
@@ -22,9 +22,11 @@ public :
     void setVec2Uniform(const std::string name, float x, float y);
     void setVec3Uniform(const std::string name, float x, float y, float z);
     void setVec4Uniform(const std::string name, float x, float y, float z, float w);
+    bool CompilationSucceeded();
 
 private:
     std::unordered_map<std::string, GLint> uniform_cache;
+    bool has_compilation_succeeded;
 };
 
 #endif

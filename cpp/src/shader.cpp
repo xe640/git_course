@@ -5,6 +5,7 @@ Shader::Shader(const char* vertexShaderPath, const char* fragmentShaderPath){
     std::string fragmentCode;
     std::ifstream vShaderFile;
     std::ifstream fShaderFile;
+    has_compilation_succeeded = true;
     // ensure ifstream objects can throw exceptions:
     vShaderFile.exceptions (std::ifstream::failbit | std::ifstream::badbit);
     fShaderFile.exceptions (std::ifstream::failbit | std::ifstream::badbit);
@@ -27,6 +28,8 @@ Shader::Shader(const char* vertexShaderPath, const char* fragmentShaderPath){
     catch(std::ifstream::failure e)
     {
         std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ" << std::endl;
+        has_compilation_succeeded = false;
+        return;
     }
     const char* vShaderCode = vertexCode.c_str();
     const char* fShaderCode = fragmentCode.c_str();
@@ -43,6 +46,7 @@ Shader::Shader(const char* vertexShaderPath, const char* fragmentShaderPath){
     {
         glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
         std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
+        has_compilation_succeeded = false;
     }
 
     GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -54,6 +58,7 @@ Shader::Shader(const char* vertexShaderPath, const char* fragmentShaderPath){
     {
         glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
         std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
+        has_compilation_succeeded = false;
     }
 
     GLuint shaderProgram = glCreateProgram();
@@ -66,6 +71,7 @@ Shader::Shader(const char* vertexShaderPath, const char* fragmentShaderPath){
     if(!success) {
         glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
         std::cout << "ERROR::SHADER::_LINKING_FAILED\n" << infoLog << std::endl;
+        has_compilation_succeeded = false;
     }
 
     glDeleteShader(vertexShader);
@@ -75,10 +81,16 @@ Shader::Shader(const char* vertexShaderPath, const char* fragmentShaderPath){
 }
 
 void Shader::use(){
-    glUseProgram(programID);
+    if (has_compilation_succeeded) {
+        glUseProgram(programID);
+    }
 }
 
 void Shader::setIntUniform(const std::string name, int value) {
+    if (!has_compilation_succeeded) {
+        return;
+    }
+
     if(uniform_cache.find(name) == uniform_cache.end()){
         GLint location = glGetUniformLocation(programID, name.c_str());
         if (location == -1) {
@@ -90,6 +102,10 @@ void Shader::setIntUniform(const std::string name, int value) {
 }
 
 void Shader::setFloatUniform(const std::string name, float value) {
+    if (!has_compilation_succeeded) {
+        return;
+    }
+
     if(uniform_cache.find(name) == uniform_cache.end()){
         GLint location = glGetUniformLocation(programID, name.c_str());
         if (location == -1) {
@@ -101,6 +117,10 @@ void Shader::setFloatUniform(const std::string name, float value) {
 }
 
 void Shader::setVec2Uniform(const std::string name, float x, float y) {
+    if (!has_compilation_succeeded) {
+        return;
+    }
+
     if(uniform_cache.find(name) == uniform_cache.end()){
         GLint location = glGetUniformLocation(programID, name.c_str());
         if (location == -1) {
@@ -112,6 +132,10 @@ void Shader::setVec2Uniform(const std::string name, float x, float y) {
 }
 
 void Shader::setVec3Uniform(const std::string name, float x, float y, float z) {
+    if (!has_compilation_succeeded) {
+        return;
+    }
+
     if(uniform_cache.find(name) == uniform_cache.end()){
         GLint location = glGetUniformLocation(programID, name.c_str());
         if (location == -1) {
@@ -124,6 +148,10 @@ void Shader::setVec3Uniform(const std::string name, float x, float y, float z) {
 }
 
 void Shader::setVec4Uniform(const std::string name, float x, float y, float z, float w) {
+    if (!has_compilation_succeeded) {
+        return;
+    }
+
     if(uniform_cache.find(name) == uniform_cache.end()){
         GLint location = glGetUniformLocation(programID, name.c_str());
         if (location == -1) {
@@ -133,4 +161,8 @@ void Shader::setVec4Uniform(const std::string name, float x, float y, float z, f
     }
     glUniform4f(uniform_cache[name], x, y, z, w);
 
+}
+
+bool Shader::CompilationSucceeded(){
+    return has_compilation_succeeded;
 }
