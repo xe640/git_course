@@ -5,6 +5,8 @@ double GUIRender::last_mouse_y = 0.0;
 float GUIRender::look_sensitivity = 1.0f;
 bool GUIRender::last_mouse_press = false;
 void(*GUIRender::shader_reload_callback)() = nullptr;
+ImGuiIO* GUIRender::io = nullptr;
+ImGuiContext* GUIRender::context = nullptr;
 
 gui_data GUIRender::data = {
     ImVec2(.0f, .0f),
@@ -12,11 +14,28 @@ gui_data GUIRender::data = {
     ImVec4(0.2f, 0.2f, 0.2f, 1.0f)
 };
 
+void GUIRender::Initialize(float mainScale, GLFWwindow* window, const char* glslVersion){
+    IMGUI_CHECKVERSION();
+    context = ImGui::CreateContext();
+    io = &ImGui::GetIO(); (void)io;
+    io->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    io->ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+    
 
-void GUIRender::UpdateInput(ImGuiIO& io, GLFWwindow* window){
+    ImGui::StyleColorsDark();
+
+    ImGuiStyle& style = ImGui::GetStyle();
+    style.ScaleAllSizes(mainScale);        // Bake a fixed style scale. (until we have a solution for dynamic style scaling, changing this requires resetting Style + calling this again)
+    style.FontScaleDpi = mainScale;
+
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init(glslVersion);
+}
+
+void GUIRender::UpdateInput(GLFWwindow* window){
     glfwPollEvents();
 
-    if(!io.WantCaptureMouse) {
+    if(!io->WantCaptureMouse) {
         int windowWidth, windowHeight;
         glfwGetFramebufferSize(window, &windowWidth, &windowHeight);
         int mouseClickState = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
@@ -25,7 +44,7 @@ void GUIRender::UpdateInput(ImGuiIO& io, GLFWwindow* window){
             static double curMouseX, curMouseY;
             glfwGetCursorPos(window, &curMouseX, &curMouseY);
             data.cameraYawPitch.x += (curMouseX - last_mouse_x) * look_sensitivity * 0.1f;
-            data.cameraYawPitch.y -= (curMouseY - last_mouse_x) * look_sensitivity * 0.1f;
+            data.cameraYawPitch.y += (curMouseY - last_mouse_y) * look_sensitivity * 0.1f;
             last_mouse_press = true;
         } else {
             glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
@@ -36,19 +55,19 @@ void GUIRender::UpdateInput(ImGuiIO& io, GLFWwindow* window){
         }
         glfwGetCursorPos(window, &last_mouse_x, &last_mouse_y);
     }
-    if(!io.WantCaptureKeyboard) {
+    if(!io->WantCaptureKeyboard) {
 
     }
 }
 
-void GUIRender::DrawGUI(ImGuiIO& io){
+void GUIRender::DrawGUI(){
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
     {
         ImGui::Begin("info");
-        ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+        ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io->Framerate, io->Framerate);
         ImGui::Text("Camera angles (%.1f, %.1f)", data.cameraYawPitch.x, data.cameraYawPitch.y);
         ImGui::DragFloat("Look sensitivity", &look_sensitivity, 0.01f);
         ImGui::ColorEdit3("Background colour", (float*)&data.clearColour);
@@ -69,4 +88,10 @@ void GUIRender::RenderGUI(){
 
 void GUIRender::SetShaderReloadCallback(void(*shaderReloadCallback)()){
     shader_reload_callback = shaderReloadCallback;
+}
+
+void GUIRender::CleanUp(){
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext(context);
 }

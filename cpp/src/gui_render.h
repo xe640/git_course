@@ -20,13 +20,17 @@ private:
     static float look_sensitivity;
     static bool last_mouse_press;
     static void(*shader_reload_callback)();
+    static ImGuiIO* io;
+    static ImGuiContext* context;
 public:
     static gui_data data;
 
-    static void UpdateInput(ImGuiIO& io, GLFWwindow* window);
-    static void DrawGUI(ImGuiIO& io);
+    static void Initialize(float mainScale, GLFWwindow* window, const char* glslVersion);
+    static void UpdateInput(GLFWwindow* window);
+    static void DrawGUI();
     static void RenderGUI();
     static void SetShaderReloadCallback(void(*shaderReloadCallback)());
+    static void CleanUp();
 };
 
 #endif

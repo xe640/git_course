@@ -1,5 +1,3 @@
-$SetStrictMode = Set-StrictMode -Version Latest
-
 [string]$OutName = $null
 
 $RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path

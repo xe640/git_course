@@ -41,28 +41,14 @@ int main(int, char **) {
     glViewport(0, 0, 800 * main_scale, 600 * main_scale);
     glfwSetFramebufferSizeCallback(window, onWindowResize);
 
-    IMGUI_CHECKVERSION();
-    ImGuiContext* context = ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO(); (void)io;
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
-
-    ImGui::StyleColorsDark();
-
-    ImGuiStyle& style = ImGui::GetStyle();
-    style.ScaleAllSizes(main_scale);        // Bake a fixed style scale. (until we have a solution for dynamic style scaling, changing this requires resetting Style + calling this again)
-    style.FontScaleDpi = main_scale;
-
-    ImGui_ImplGlfw_InitForOpenGL(window, true);
-    ImGui_ImplOpenGL3_Init(glsl_version);
-
+    GUIRender::Initialize(main_scale, window, glsl_version);
     GLRenderer::Initialize();
     GUIRender::SetShaderReloadCallback(GLRenderer::ReloadShaders);
 
     while(!glfwWindowShouldClose(window))
     {
-        GUIRender::UpdateInput(io, window);
-        GUIRender::DrawGUI(io);
+        GUIRender::UpdateInput(window);
+        GUIRender::DrawGUI();
         
         GLRenderer::Render(GUIRender::data);
 
@@ -77,10 +63,7 @@ int main(int, char **) {
     }
 
     GLRenderer::CleanUp();
-
-    ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplGlfw_Shutdown();
-    ImGui::DestroyContext(context);
+    GUIRender::CleanUp();
 
     glfwDestroyWindow(window);
     glfwTerminate();
