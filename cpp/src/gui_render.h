@@ -5,11 +5,15 @@
 #include "../include/imgui/imgui.h"
 #include "../include/imgui/imgui_impl_glfw.h"
 #include "../include/imgui/imgui_impl_opengl3.h"
+#include "../include/GLM/glm.hpp"
+#include "../include/GLM/gtc/matrix_transform.hpp"
+#include "../include/GLM/gtc/type_ptr.hpp"
 
 struct gui_data {
     ImVec2 cameraYawPitch;
     ImVec4 clearColour;
     ImVec4 triColour;
+    float fov;
 };
 
 class GUIRender
@@ -18,10 +22,13 @@ private:
     static double last_mouse_x;
     static double last_mouse_y;
     static float look_sensitivity;
+    static float move_speed;
     static bool last_mouse_press;
     static void(*shader_reload_callback)();
     static ImGuiIO* io;
     static ImGuiContext* context;
+    static glm::vec3 cam_pos;
+    static glm::mat3 cam_basis;
 public:
     static gui_data data;
 
@@ -31,6 +38,7 @@ public:
     static void RenderGUI();
     static void SetShaderReloadCallback(void(*shaderReloadCallback)());
     static void CleanUp();
+    static glm::mat4x4 getViewTransform();
 };
 
 #endif
