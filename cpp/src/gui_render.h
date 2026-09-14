@@ -1,6 +1,9 @@
 #ifndef GUI_RENDER_H
 #define GUI_RENDER_H
 
+#include <iostream>
+#include <stdio.h>
+
 #include "../include/GLFW/glfw3.h"
 #include "../include/imgui/imgui.h"
 #include "../include/imgui/imgui_impl_glfw.h"
@@ -29,6 +32,8 @@ private:
     static ImGuiContext* context;
     static glm::vec3 cam_pos;
     static glm::mat3 cam_basis;
+    static float delta_time;
+    static double last_frame;
 public:
     static gui_data data;
 

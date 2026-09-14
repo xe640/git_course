@@ -10,6 +10,8 @@ ImGuiIO* GUIRender::io = nullptr;
 ImGuiContext* GUIRender::context = nullptr;
 glm::vec3 GUIRender::cam_pos = glm::vec3(0.0f, 0.0f, 0.0f);
 glm::mat3 GUIRender::cam_basis = glm::mat3(1.0f);
+float GUIRender::delta_time = 0.0f;
+double GUIRender::last_frame = 0.0f;
 
 gui_data GUIRender::data = {
     ImVec2(.0f, .0f),
@@ -38,6 +40,9 @@ void GUIRender::Initialize(float mainScale, GLFWwindow* window, const char* glsl
 
 void GUIRender::UpdateInput(GLFWwindow* window){
     glfwPollEvents();
+    float currentFrame = glfwGetTime();
+    delta_time = currentFrame - last_frame;
+    last_frame = currentFrame;
 
     if(!io->WantCaptureMouse) {
         int windowWidth, windowHeight;
@@ -48,7 +53,7 @@ void GUIRender::UpdateInput(GLFWwindow* window){
             static double curMouseX, curMouseY;
             glfwGetCursorPos(window, &curMouseX, &curMouseY);
             data.cameraYawPitch.x += (curMouseX - last_mouse_x) * look_sensitivity * 0.01f;
-            data.cameraYawPitch.y += (curMouseY - last_mouse_y) * look_sensitivity * 0.01f;
+            data.cameraYawPitch.y -= (curMouseY - last_mouse_y) * look_sensitivity * 0.01f;
             data.cameraYawPitch.y = glm::clamp(data.cameraYawPitch.y, -89.9f, 89.9f);
             last_mouse_press = true;
 
@@ -62,7 +67,7 @@ void GUIRender::UpdateInput(GLFWwindow* window){
             glm::vec3 cam_up, cam_right;
             cam_right = glm::normalize(glm::cross(cam_fwd, glm::vec3(0.0f, 1.0f, 0.0f)));
             cam_up = glm::cross(cam_right, cam_fwd);
-            cam_basis = glm::mat3(cam_right, cam_up, cam_fwd);
+            cam_basis = glm::mat3(cam_fwd, cam_up, cam_right);
         } else {
             glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
             if(last_mouse_press) {
@@ -73,7 +78,19 @@ void GUIRender::UpdateInput(GLFWwindow* window){
         glfwGetCursorPos(window, &last_mouse_x, &last_mouse_y);
     }
     if(!io->WantCaptureKeyboard) {
-
+        glm::vec3 moveDir = glm::vec3(
+            (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS? 1.0f : 0.0f)
+            - (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS? 1.0f : 0.0f),
+            (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS? 1.0f : 0.0f)
+            - (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS? 1.0f : 0.0f),
+            (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS? 1.0f : 0.0f)
+            - (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS? 1.0f : 0.0f)
+        );
+        if(glm::length(moveDir) > 0.1f) {
+            moveDir = glm::normalize(moveDir);
+        }
+        moveDir *= move_speed * delta_time;
+        cam_pos += glm::transpose(cam_basis) * moveDir;
     }
 }
 
@@ -85,7 +102,11 @@ void GUIRender::DrawGUI(){
     {
         ImGui::Begin("info");
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io->Framerate, io->Framerate);
-        ImGui::Text("Camera angles (%.1f, %.1f)", data.cameraYawPitch.x, data.cameraYawPitch.y);
+        ImGui::Text(
+            "Camera angles (%.1f, %.1f)\n Camera pos (%.1f, %.1f, %.1f)", 
+            data.cameraYawPitch.x, data.cameraYawPitch.y,
+            cam_pos.x, cam_pos.y, cam_pos.z
+        );
         ImGui::DragFloat("Look sensitivity", &look_sensitivity, 0.01f);
         ImGui::ColorEdit3("Background colour", (float*)&data.clearColour);
         ImGui::ColorEdit3("Triangle colour", (float*)&data.triColour);
@@ -111,4 +132,11 @@ void GUIRender::CleanUp(){
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext(context);
+}
+
+glm::mat4x4 GUIRender::getViewTransform(){
+    glm::mat4x4 viewMatrix = glm::mat4(cam_basis);
+    viewMatrix[3][3] = 1.0f;
+    viewMatrix = glm::translate(viewMatrix, -cam_pos);
+    return viewMatrix;
 }
