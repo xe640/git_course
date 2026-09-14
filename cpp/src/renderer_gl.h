@@ -7,6 +7,7 @@
 class GLRenderer{
 public:
     static void Initialize();
+    static void ReloadShaders();
     static void Render(gui_data state);
     static void CleanUp();
 private:

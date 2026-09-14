@@ -1,4 +1,6 @@
-Set-StrictMode -Version Latest
+$SetStrictMode = Set-StrictMode -Version Latest
+
+[string]$OutName = $null
 
 $RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 $CppDir = Join-Path $RepoRoot "cpp"
@@ -58,7 +60,6 @@ $compileArgs = @(
 
 Write-Host "Using g++ at:" $gpp.Path
 Write-Host "Building with args:" $compileArgs
-Write-Host "Sources:" ($src -join ' ')
 
 & $gpp.Path @compileArgs
 if ($LASTEXITCODE -ne 0) { Write-Error "g++ failed with exit code $LASTEXITCODE"; exit $LASTEXITCODE }

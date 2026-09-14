@@ -1,9 +1,11 @@
 #include "gui_render.h"
 
-double GUIRender::lastMouseX = 0.0;
-double GUIRender::lastMouseY = 0.0;
+double GUIRender::last_mouse_x = 0.0;
+double GUIRender::last_mouse_y = 0.0;
 float GUIRender::look_sensitivity = 1.0f;
-bool GUIRender::lastMousePress = false;
+bool GUIRender::last_mouse_press = false;
+void(*GUIRender::shader_reload_callback)() = nullptr;
+
 gui_data GUIRender::data = {
     ImVec2(.0f, .0f),
     ImVec4(0.45f, 0.55f, 0.60f, 1.00f), 
@@ -22,17 +24,17 @@ void GUIRender::UpdateInput(ImGuiIO& io, GLFWwindow* window){
             glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
             static double curMouseX, curMouseY;
             glfwGetCursorPos(window, &curMouseX, &curMouseY);
-            data.cameraYawPitch.x += (curMouseX - lastMouseX) * look_sensitivity * 0.1f;
-            data.cameraYawPitch.y -= (curMouseY - lastMouseY) * look_sensitivity * 0.1f;
-            lastMousePress = true;
+            data.cameraYawPitch.x += (curMouseX - last_mouse_x) * look_sensitivity * 0.1f;
+            data.cameraYawPitch.y -= (curMouseY - last_mouse_x) * look_sensitivity * 0.1f;
+            last_mouse_press = true;
         } else {
             glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-            if(lastMousePress) {
+            if(last_mouse_press) {
                 glfwSetCursorPos(window, windowWidth * 0.5, windowHeight * 0.5);
             }
-            lastMousePress = false;
+            last_mouse_press = false;
         }
-        glfwGetCursorPos(window, &lastMouseX, &lastMouseY);
+        glfwGetCursorPos(window, &last_mouse_x, &last_mouse_y);
     }
     if(!io.WantCaptureKeyboard) {
 
@@ -51,6 +53,11 @@ void GUIRender::DrawGUI(ImGuiIO& io){
         ImGui::DragFloat("Look sensitivity", &look_sensitivity, 0.01f);
         ImGui::ColorEdit3("Background colour", (float*)&data.clearColour);
         ImGui::ColorEdit3("Triangle colour", (float*)&data.triColour);
+
+        if(ImGui::Button("Reload shaders") && shader_reload_callback != nullptr) {
+            shader_reload_callback();
+        }
+
         ImGui::End();
     }
 }
@@ -58,4 +65,8 @@ void GUIRender::DrawGUI(ImGuiIO& io){
 void GUIRender::RenderGUI(){
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+}
+
+void GUIRender::SetShaderReloadCallback(void(*shaderReloadCallback)()){
+    shader_reload_callback = shaderReloadCallback;
 }

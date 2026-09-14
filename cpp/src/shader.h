@@ -11,10 +11,9 @@
 
 class Shader {
 public : 
-    GLuint programID;
-
     Shader(const char* vertexShaderPath, const char* fragmentShaderPath);
 
+    void reload();
     void use();
 
     void setIntUniform(const std::string name, int value);
@@ -23,10 +22,14 @@ public :
     void setVec3Uniform(const std::string name, float x, float y, float z);
     void setVec4Uniform(const std::string name, float x, float y, float z, float w);
     bool CompilationSucceeded();
+    GLuint programID();
 
 private:
     std::unordered_map<std::string, GLint> uniform_cache;
     bool has_compilation_succeeded;
+    const char* vertex_shader_path;
+    const char* fragment_shader_path;
+    GLuint program_id;
 };
 
 #endif

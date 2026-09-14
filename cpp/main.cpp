@@ -57,6 +57,7 @@ int main(int, char **) {
     ImGui_ImplOpenGL3_Init(glsl_version);
 
     GLRenderer::Initialize();
+    GUIRender::SetShaderReloadCallback(GLRenderer::ReloadShaders);
 
     while(!glfwWindowShouldClose(window))
     {

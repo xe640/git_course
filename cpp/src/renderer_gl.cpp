@@ -4,16 +4,22 @@ Shader* GLRenderer::triangle_shader = nullptr;
 
 void GLRenderer::Initialize(){
     triangle_shader = new Shader("../shaders/triangleVS.glsl", "../shaders/triangleFS.glsl");
-    triangle_shader->use();
 
     GLuint VAO;
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
 }
 
+void GLRenderer::ReloadShaders(){
+    if(triangle_shader != nullptr) {
+        triangle_shader->reload();
+    }
+}
+
 void GLRenderer::Render(gui_data state){
     if (triangle_shader->CompilationSucceeded())
     {
+        triangle_shader->use();
         ImVec4 clearCol = state.clearColour;
         ImVec4 triCol = state.triColour;
         glClearColor(clearCol.x, clearCol.y, clearCol.z, 1.0f);

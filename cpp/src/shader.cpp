@@ -1,6 +1,17 @@
 #include "shader.h"
 
 Shader::Shader(const char* vertexShaderPath, const char* fragmentShaderPath){
+    program_id = 0;
+    vertex_shader_path = vertexShaderPath;
+    fragment_shader_path = fragmentShaderPath;
+    reload();
+}
+
+void Shader::reload(){
+    if(program_id != 0) {
+        glDeleteProgram(program_id);
+    }
+
     std::string vertexCode;
     std::string fragmentCode;
     std::ifstream vShaderFile;
@@ -12,8 +23,8 @@ Shader::Shader(const char* vertexShaderPath, const char* fragmentShaderPath){
     try 
     {
         // open files
-        vShaderFile.open(vertexShaderPath);
-        fShaderFile.open(fragmentShaderPath);
+        vShaderFile.open(vertex_shader_path);
+        fShaderFile.open(fragment_shader_path);
         std::stringstream vShaderStream, fShaderStream;
         // read file's buffer contents into streams
         vShaderStream << vShaderFile.rdbuf();
@@ -77,12 +88,12 @@ Shader::Shader(const char* vertexShaderPath, const char* fragmentShaderPath){
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
 
-    programID = shaderProgram;
+    program_id = shaderProgram;
 }
 
 void Shader::use(){
     if (has_compilation_succeeded) {
-        glUseProgram(programID);
+        glUseProgram(program_id);
     }
 }
 
@@ -92,7 +103,7 @@ void Shader::setIntUniform(const std::string name, int value) {
     }
 
     if(uniform_cache.find(name) == uniform_cache.end()){
-        GLint location = glGetUniformLocation(programID, name.c_str());
+        GLint location = glGetUniformLocation(program_id, name.c_str());
         if (location == -1) {
             std::cout << "uniform " << name.c_str() << " not found!" << std::endl;
         }
@@ -107,7 +118,7 @@ void Shader::setFloatUniform(const std::string name, float value) {
     }
 
     if(uniform_cache.find(name) == uniform_cache.end()){
-        GLint location = glGetUniformLocation(programID, name.c_str());
+        GLint location = glGetUniformLocation(program_id, name.c_str());
         if (location == -1) {
             std::cout << "uniform " << name.c_str() << " not found!" << std::endl;
         }
@@ -122,7 +133,7 @@ void Shader::setVec2Uniform(const std::string name, float x, float y) {
     }
 
     if(uniform_cache.find(name) == uniform_cache.end()){
-        GLint location = glGetUniformLocation(programID, name.c_str());
+        GLint location = glGetUniformLocation(program_id, name.c_str());
         if (location == -1) {
             std::cout << "uniform " << name.c_str() << " not found!" << std::endl;
         }
@@ -137,7 +148,7 @@ void Shader::setVec3Uniform(const std::string name, float x, float y, float z) {
     }
 
     if(uniform_cache.find(name) == uniform_cache.end()){
-        GLint location = glGetUniformLocation(programID, name.c_str());
+        GLint location = glGetUniformLocation(program_id, name.c_str());
         if (location == -1) {
             std::cout << "uniform " << name.c_str() << " not found!" << std::endl;
         }
@@ -153,7 +164,7 @@ void Shader::setVec4Uniform(const std::string name, float x, float y, float z, f
     }
 
     if(uniform_cache.find(name) == uniform_cache.end()){
-        GLint location = glGetUniformLocation(programID, name.c_str());
+        GLint location = glGetUniformLocation(program_id, name.c_str());
         if (location == -1) {
             std::cout << "uniform " << name.c_str() << " not found!" << std::endl;
         }
@@ -165,4 +176,8 @@ void Shader::setVec4Uniform(const std::string name, float x, float y, float z, f
 
 bool Shader::CompilationSucceeded(){
     return has_compilation_succeeded;
+}
+
+GLuint Shader::programID(){
+    return program_id;
 }

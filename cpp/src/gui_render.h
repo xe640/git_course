@@ -15,16 +15,18 @@ struct gui_data {
 class GUIRender
 {
 private:
-    static double lastMouseX;
-    static double lastMouseY;
+    static double last_mouse_x;
+    static double last_mouse_y;
     static float look_sensitivity;
-    static bool lastMousePress;
+    static bool last_mouse_press;
+    static void(*shader_reload_callback)();
 public:
     static gui_data data;
 
     static void UpdateInput(ImGuiIO& io, GLFWwindow* window);
     static void DrawGUI(ImGuiIO& io);
     static void RenderGUI();
+    static void SetShaderReloadCallback(void(*shaderReloadCallback)());
 };
 
 #endif
