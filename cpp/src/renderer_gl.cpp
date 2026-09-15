@@ -54,6 +54,7 @@ void GLRenderer::Render(gui_data state, glm::mat4(*getViewMat)()){
 
 void GLRenderer::CleanUp(){
     glDeleteVertexArrays(1, &VAO);
+    glDeleteBuffers(1, &scene_data_ubo);
     if(triangle_shader != nullptr){
         free(triangle_shader);
         triangle_shader = nullptr;
