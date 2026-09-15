@@ -2,7 +2,7 @@
 #include "../include/GLM/gtc/matrix_transform.hpp"
 #include "../include/GLM/gtc/type_ptr.hpp"
 
-#define MAX_LIST_ELEMENTS 4096
+#define MAX_RENDER_LIST_ELEMENTS 4096
 
 struct plane {
     glm::vec3 position;
@@ -21,12 +21,12 @@ struct line {
 };
 
 struct plane_list {
-    glm::vec4 values[MAX_LIST_ELEMENTS * 3];
+    glm::vec4 values[MAX_RENDER_LIST_ELEMENTS * 3];
     int numPlanes;
 };
 
 struct line_list {
-    glm::vec4 values[MAX_LIST_ELEMENTS * 4];
+    glm::vec4 values[MAX_RENDER_LIST_ELEMENTS * 4];
     int numLines;
 };
 

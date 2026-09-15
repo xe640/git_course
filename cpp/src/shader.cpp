@@ -190,6 +190,21 @@ void Shader::setMat4Uniform(const std::string name, glm::mat4 value) {
 
 }
 
+void Shader::setTexUniform(const std::string name, int texture_id){
+    if (!has_compilation_succeeded) {
+        return;
+    }
+
+    if(uniform_cache.find(name) == uniform_cache.end()){
+        GLint location = glGetUniformLocation(program_id, name.c_str());
+        if (location == -1) {
+            std::cout << "uniform " << name.c_str() << " not found!" << std::endl;
+        }
+        uniform_cache[name] = location;
+    }
+    glUniform1i(uniform_cache[name], texture_id);
+}
+
 void Shader::bindUBO(const std::string name, int bindingPoint){
     GLuint uboIndex = glGetUniformBlockIndex(program_id, name.c_str());
     glUniformBlockBinding(program_id, uboIndex, bindingPoint);

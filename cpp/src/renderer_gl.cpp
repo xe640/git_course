@@ -1,13 +1,21 @@
 #include "renderer_gl.h"
 
 Shader* GLRenderer::triangle_shader = nullptr;
+Shader* GLRenderer::plane_shader = nullptr;
 glm::mat4 GLRenderer::projection_matrix = glm::mat4(1.0f);
 glm::mat4 GLRenderer::projection_view_matrix = glm::mat4(1.0f);
 GLuint GLRenderer::VAO;
 GLuint GLRenderer::scene_data_ubo;
+texture_buffer GLRenderer::plane_data_buffer;
+render_list* GLRenderer::r_list = nullptr;
+
+void gen_list(render_list* list);
 
 void GLRenderer::Initialize(){
     triangle_shader = new Shader("../shaders/triangleVS.glsl", "../shaders/triangleFS.glsl");
+    plane_shader = new Shader("../shaders/planeVS.glsl", "../shaders/planeFS.glsl");
+    r_list = new render_list();
+    gen_list(r_list);
 
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
@@ -16,13 +24,19 @@ void GLRenderer::Initialize(){
     glBufferData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), nullptr, GL_DYNAMIC_DRAW);
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
     glBindBufferBase(GL_UNIFORM_BUFFER, 0, scene_data_ubo);
+    gen_tbo(&plane_data_buffer, sizeof(glm::vec4) * 3 * MAX_RENDER_LIST_ELEMENTS);
     triangle_shader->bindUBO("sceneGlobal", 0);
+    plane_shader->bindUBO("sceneGlobal", 0);
+    std::cout << "Gl init complete";
 }
 
 void GLRenderer::ReloadShaders(){
     if(triangle_shader != nullptr) {
         triangle_shader->reload();
     }
+    if(plane_shader != nullptr) {
+        plane_shader->reload();
+    } 
 }
 
 void GLRenderer::Render(gui_data state, glm::mat4(*getViewMat)()){
@@ -39,8 +53,7 @@ void GLRenderer::Render(gui_data state, glm::mat4(*getViewMat)()){
         glBindBuffer(GL_UNIFORM_BUFFER, 0);
     }
 
-    if (triangle_shader->CompilationSucceeded())
-    {
+    if (triangle_shader->CompilationSucceeded()) {
         triangle_shader->use();
         ImVec4 clearCol = state.clearColour;
         ImVec4 triCol = state.triColour;
@@ -49,6 +62,17 @@ void GLRenderer::Render(gui_data state, glm::mat4(*getViewMat)()){
 
         triangle_shader->setVec3Uniform("inColour", triCol.x, triCol.y, triCol.z);
         glDrawArrays(GL_TRIANGLES, 0, 3);
+    }
+
+    if(plane_shader->CompilationSucceeded()) {
+        glBindBuffer(GL_TEXTURE_BUFFER, plane_data_buffer.tbo);
+        glBufferSubData(GL_TEXTURE_BUFFER, 0, sizeof(glm::vec4) * 3 * MAX_RENDER_LIST_ELEMENTS, r_list->planeList->values);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_BUFFER, plane_data_buffer.texture);
+        plane_shader->use();
+        plane_shader->setTexUniform("instanceData", 0);
+
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, r_list->planeList->numPlanes * 6 - 1);
     }
 }
 
@@ -69,4 +93,20 @@ void GLRenderer::gen_tbo(texture_buffer* tbuf, int size){
     glGenTextures(1, &tbuf->texture);
     glBindTexture(GL_TEXTURE_BUFFER, tbuf->texture);
     glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, tbuf->tbo);
+}
+
+void gen_list(render_list* list) {
+    for (int i = 0; i < 15; i++)
+    {
+        glm::vec3 pos = glm::vec3(i - (i % 6) * 2, (i % 3) * 3, i % 7);
+
+        plane testPlane = {
+            pos, (float)(i % 5) * 0.2f + 0.2f,
+            glm::vec3(0.0f),
+            glm::vec4(glm::sin((double)i * 0.2), glm::cos(i), 0.3f, 1.0f)
+        };
+
+        RenderListGen::renderPlaneTowards(list, testPlane, glm::vec3(0.0f));
+    }
+    
 }
