@@ -14,9 +14,9 @@ struct plane {
 struct line {
     glm::vec3 position1;
     float size1;
-    glm::vec4 colour1;
     glm::vec3 position2;
     float size2;
+    glm::vec4 colour1;
     glm::vec4 colour2;
 };
 
@@ -42,7 +42,7 @@ struct AABB {
 
 class RenderListGen {
 public:
-    static void clearLists(render_list* list);
+    static void clearList(render_list* list);
     static void renderPlane(render_list* list, plane toAdd);
     static void renderLine(render_list* list, line toAdd);
     static void renderPlaneTowards(render_list* list, plane toAdd, glm::vec3 target_pos);
