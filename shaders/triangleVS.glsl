@@ -1,6 +1,8 @@
 #version 330 core
 
-uniform mat4 projectionViewMat;
+layout (std140) uniform sceneGlobal {
+   mat4 projectionViewMat;
+};
 
 void main()
 {

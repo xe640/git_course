@@ -190,6 +190,11 @@ void Shader::setMat4Uniform(const std::string name, glm::mat4 value) {
 
 }
 
+void Shader::bindUBO(const std::string name, int bindingPoint){
+    GLuint uboIndex = glGetUniformBlockIndex(program_id, name.c_str());
+    glUniformBlockBinding(program_id, uboIndex, bindingPoint);
+}
+
 bool Shader::CompilationSucceeded(){
     return has_compilation_succeeded;
 }

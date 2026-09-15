@@ -25,6 +25,7 @@ public :
     void setVec3Uniform(const std::string name, float x, float y, float z);
     void setVec4Uniform(const std::string name, float x, float y, float z, float w);
     void setMat4Uniform(const std::string name, glm::mat4 value);
+    void bindUBO(const std::string name, int bindingPoint);
     bool CompilationSucceeded();
     GLuint programID();
 

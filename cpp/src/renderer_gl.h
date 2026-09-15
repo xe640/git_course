@@ -17,6 +17,8 @@ private:
     static Shader* triangle_shader;
     static glm::mat4 projection_matrix;
     static glm::mat4 projection_view_matrix;
+    static GLuint VAO;
+    static GLuint scene_data_ubo;
 };
 
 #endif
