@@ -65,7 +65,7 @@ void GUIRender::UpdateInput(GLFWwindow* window){
             static double curMouseX, curMouseY;
             glfwGetCursorPos(window, &curMouseX, &curMouseY);
             data.cameraYawPitch.x += (curMouseX - last_mouse_x) * look_sensitivity * 0.01f;
-            data.cameraYawPitch.y -= (curMouseY - last_mouse_y) * look_sensitivity * 0.01f;
+            data.cameraYawPitch.y += (curMouseY - last_mouse_y) * look_sensitivity * 0.01f;
             data.cameraYawPitch.y = glm::clamp(data.cameraYawPitch.y, -89.9f, 89.9f);
             last_mouse_press = true;
 
