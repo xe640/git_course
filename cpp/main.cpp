@@ -50,7 +50,7 @@ int main(int, char **) {
         GUIRender::UpdateInput(window);
         GUIRender::DrawGUI();
         
-        GLRenderer::Render(GUIRender::data);
+        GLRenderer::Render(GUIRender::data, GUIRender::getViewTransform);
 
         GUIRender::RenderGUI();
         glfwSwapBuffers(window);

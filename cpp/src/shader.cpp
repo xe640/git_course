@@ -174,6 +174,22 @@ void Shader::setVec4Uniform(const std::string name, float x, float y, float z, f
 
 }
 
+void Shader::setMat4Uniform(const std::string name, glm::mat4 value) {
+    if (!has_compilation_succeeded) {
+        return;
+    }
+
+    if(uniform_cache.find(name) == uniform_cache.end()){
+        GLint location = glGetUniformLocation(program_id, name.c_str());
+        if (location == -1) {
+            std::cout << "uniform " << name.c_str() << " not found!" << std::endl;
+        }
+        uniform_cache[name] = location;
+    }
+    glUniformMatrix4fv(uniform_cache[name], 1, false, glm::value_ptr(value));
+
+}
+
 bool Shader::CompilationSucceeded(){
     return has_compilation_succeeded;
 }

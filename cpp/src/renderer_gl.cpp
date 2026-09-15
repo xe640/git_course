@@ -1,6 +1,8 @@
 #include "renderer_gl.h"
 
 Shader* GLRenderer::triangle_shader = nullptr;
+glm::mat4 GLRenderer::projection_matrix = glm::mat4(1.0f);
+glm::mat4 GLRenderer::projection_view_matrix = glm::mat4(1.0f);
 
 void GLRenderer::Initialize(){
     triangle_shader = new Shader("../shaders/triangleVS.glsl", "../shaders/triangleFS.glsl");
@@ -16,7 +18,17 @@ void GLRenderer::ReloadShaders(){
     }
 }
 
-void GLRenderer::Render(gui_data state){
+void GLRenderer::Render(gui_data state, glm::mat4(*getViewMat)()){
+    if(state.windowChanged) {
+        projection_matrix = glm::perspective(
+            glm::radians(state.fov),
+            state.windowAspect.x/state.windowAspect.y,
+        0.01f, 200.0f);
+    }
+    if(state.cameraChanged) {
+        projection_view_matrix = projection_matrix * getViewMat();
+    }
+
     if (triangle_shader->CompilationSucceeded())
     {
         triangle_shader->use();
@@ -26,6 +38,7 @@ void GLRenderer::Render(gui_data state){
         glClear(GL_COLOR_BUFFER_BIT);
 
         triangle_shader->setVec3Uniform("inColour", triCol.x, triCol.y, triCol.z);
+        triangle_shader->setMat4Uniform("projectionViewMat", projection_view_matrix);
         glDrawArrays(GL_TRIANGLES, 0, 3);
     }
 }

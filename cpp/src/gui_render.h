@@ -17,6 +17,9 @@ struct gui_data {
     ImVec4 clearColour;
     ImVec4 triColour;
     float fov;
+    glm::vec2 windowAspect;
+    bool windowChanged;
+    bool cameraChanged;
 };
 
 class GUIRender

@@ -17,7 +17,10 @@ gui_data GUIRender::data = {
     ImVec2(.0f, .0f),
     ImVec4(0.45f, 0.55f, 0.60f, 1.00f), 
     ImVec4(0.2f, 0.2f, 0.2f, 1.0f),
-    110.0f
+    110.0f,
+    glm::vec2(1.0f, 1.0f),
+    false,
+    true
 };
 
 void GUIRender::Initialize(float mainScale, GLFWwindow* window, const char* glslVersion){
@@ -44,16 +47,25 @@ void GUIRender::UpdateInput(GLFWwindow* window){
     delta_time = currentFrame - last_frame;
     last_frame = currentFrame;
 
+    data.windowChanged = false;
+    int windowWidth, windowHeight;
+    glfwGetFramebufferSize(window, &windowWidth, &windowHeight);
+    glm::vec2 newAspect = glm::vec2((float)windowWidth, (float)windowHeight);
+    if(!glm::all(glm::equal(data.windowAspect, newAspect))) {
+        data.windowChanged = true;
+        data.windowAspect = newAspect;
+    }
+
     if(!io->WantCaptureMouse) {
-        int windowWidth, windowHeight;
-        glfwGetFramebufferSize(window, &windowWidth, &windowHeight);
         int mouseClickState = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
         if (mouseClickState == GLFW_PRESS){
+            data.cameraChanged = true;
             glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
             static double curMouseX, curMouseY;
             glfwGetCursorPos(window, &curMouseX, &curMouseY);
-            data.cameraYawPitch.x += (curMouseX - last_mouse_x) * look_sensitivity * 0.01f;
-            data.cameraYawPitch.y -= (curMouseY - last_mouse_y) * look_sensitivity * 0.01f;
+            data.cameraYawPitch.x -= (curMouseX - last_mouse_x) * look_sensitivity * 0.01f;
+            data.cameraYawPitch.y += (curMouseY - last_mouse_y) * look_sensitivity * 0.01f;
             data.cameraYawPitch.y = glm::clamp(data.cameraYawPitch.y, -89.9f, 89.9f);
             last_mouse_press = true;
 
@@ -67,7 +79,7 @@ void GUIRender::UpdateInput(GLFWwindow* window){
             glm::vec3 cam_up, cam_right;
             cam_right = glm::normalize(glm::cross(cam_fwd, glm::vec3(0.0f, 1.0f, 0.0f)));
             cam_up = glm::cross(cam_right, cam_fwd);
-            cam_basis = glm::mat3(cam_fwd, cam_up, cam_right);
+            cam_basis = glm::mat3(cam_right, cam_up, cam_fwd);
         } else {
             glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
             if(last_mouse_press) {
@@ -79,12 +91,12 @@ void GUIRender::UpdateInput(GLFWwindow* window){
     }
     if(!io->WantCaptureKeyboard) {
         glm::vec3 moveDir = glm::vec3(
-            (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS? 1.0f : 0.0f)
-            - (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS? 1.0f : 0.0f),
-            (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS? 1.0f : 0.0f)
-            - (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS? 1.0f : 0.0f),
             (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS? 1.0f : 0.0f)
-            - (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS? 1.0f : 0.0f)
+            - (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS? 1.0f : 0.0f),
+            (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS? 1.0f : 0.0f)
+            - (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS? 1.0f : 0.0f),
+            (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS? 1.0f : 0.0f)
+            - (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS? 1.0f : 0.0f)
         );
         if(glm::length(moveDir) > 0.1f) {
             moveDir = glm::normalize(moveDir);
@@ -108,6 +120,10 @@ void GUIRender::DrawGUI(){
             cam_pos.x, cam_pos.y, cam_pos.z
         );
         ImGui::DragFloat("Look sensitivity", &look_sensitivity, 0.01f);
+        if(ImGui::DragFloat("Fov", &data.fov, 1.0f, 30.0f, 160.0f)) {
+            data.windowChanged = true;
+        }
+        ImGui::DragFloat("Move speed", &move_speed);
         ImGui::ColorEdit3("Background colour", (float*)&data.clearColour);
         ImGui::ColorEdit3("Triangle colour", (float*)&data.triColour);
 

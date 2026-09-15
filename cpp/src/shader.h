@@ -2,6 +2,9 @@
 #define SHADER_H
 
 #include "../include/glad/glad.h"
+#include "../include/GLM/glm.hpp"
+#include "../include/GLM/gtc/matrix_transform.hpp"
+#include "../include/GLM/gtc/type_ptr.hpp"
   
 #include <string>
 #include <fstream>
@@ -21,6 +24,7 @@ public :
     void setVec2Uniform(const std::string name, float x, float y);
     void setVec3Uniform(const std::string name, float x, float y, float z);
     void setVec4Uniform(const std::string name, float x, float y, float z, float w);
+    void setMat4Uniform(const std::string name, glm::mat4 value);
     bool CompilationSucceeded();
     GLuint programID();
 
