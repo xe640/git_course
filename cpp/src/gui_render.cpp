@@ -78,7 +78,7 @@ void GUIRender::UpdateInput(GLFWwindow* window){
 
             glm::vec3 cam_up, cam_right;
             cam_right = glm::normalize(glm::cross(cam_fwd, glm::vec3(0.0f, 1.0f, 0.0f)));
-            cam_up = glm::cross(cam_right, cam_fwd);
+            cam_up = glm::normalize(glm::cross(cam_right, cam_fwd));
             cam_basis = glm::mat3(cam_right, cam_up, cam_fwd);
         } else {
             glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
@@ -102,7 +102,7 @@ void GUIRender::UpdateInput(GLFWwindow* window){
             moveDir = glm::normalize(moveDir);
         }
         moveDir *= move_speed * delta_time;
-        cam_pos += glm::transpose(cam_basis) * moveDir;
+        cam_pos += cam_basis * moveDir;
     }
 }
 
@@ -151,7 +151,7 @@ void GUIRender::CleanUp(){
 }
 
 glm::mat4x4 GUIRender::getViewTransform(){
-    glm::mat4x4 viewMatrix = glm::mat4(cam_basis);
+    glm::mat4x4 viewMatrix = glm::mat4(glm::transpose(cam_basis));
     viewMatrix[3][3] = 1.0f;
     viewMatrix = glm::translate(viewMatrix, -cam_pos);
     return viewMatrix;
