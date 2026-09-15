@@ -45,7 +45,7 @@ public:
     static void clearList(render_list* list);
     static void renderPlane(render_list* list, plane toAdd);
     static void renderLine(render_list* list, line toAdd);
-    static void renderPlaneTowards(render_list* list, plane toAdd, glm::vec3 target_pos);
+    static plane renderPlaneTowards(render_list* list, plane toAdd, glm::vec3 targetPos);
     static void renderPlaneWire(render_list* list, plane toAdd, float lineThickness);
     static void renderAABB(render_list* list, AABB toAdd, glm::vec4 colour, float lineThickness);
 };
