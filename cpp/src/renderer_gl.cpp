@@ -59,3 +59,13 @@ void GLRenderer::CleanUp(){
         triangle_shader = nullptr;
     }
 }
+
+void GLRenderer::gen_tbo(texture_buffer* tbuf, int size){
+    glGenBuffers(1, &tbuf->tbo);
+    glBindBuffer(GL_TEXTURE_BUFFER, tbuf->tbo);
+    glBufferData(GL_TEXTURE_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
+
+    glGenTextures(1, &tbuf->texture);
+    glBindTexture(GL_TEXTURE_BUFFER, tbuf->texture);
+    glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, tbuf->tbo);
+}

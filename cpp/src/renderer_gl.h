@@ -7,6 +7,11 @@
 #include "../include/GLM/gtc/matrix_transform.hpp"
 #include "../include/GLM/gtc/type_ptr.hpp"
 
+struct texture_buffer{
+    GLuint tbo;
+    GLuint texture;
+};
+
 class GLRenderer{
 public:
     static void Initialize();
@@ -19,6 +24,7 @@ private:
     static glm::mat4 projection_view_matrix;
     static GLuint VAO;
     static GLuint scene_data_ubo;
+    static void gen_tbo(texture_buffer* tbuf, int size);
 };
 
 #endif
