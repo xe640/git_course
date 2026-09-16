@@ -96,7 +96,7 @@ void GLRenderer::Render(gui_data state, glm::mat4(*getViewMat)()){
         line_shader->use();
         line_shader->setTexUniform("instanceData", 0);
 
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, r_list->lineList->numLines * 6 - 1);
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, r_list->lineList->numLines * 10 - 1);
     }
 }
 
