@@ -49,6 +49,8 @@ void GLRenderer::ReloadShaders(){
 }
 
 void GLRenderer::Render(gui_data state, glm::mat4(*getViewMat)()){
+    glBindVertexArray(VAO);
+
     if(state.windowChanged) {
         global_data.projectionMatrix = glm::perspective(
             glm::radians(state.fov),
@@ -70,8 +72,7 @@ void GLRenderer::Render(gui_data state, glm::mat4(*getViewMat)()){
         ImVec4 clearCol = state.clearColour;
         ImVec4 triCol = state.triColour;
         glClearColor(clearCol.x, clearCol.y, clearCol.z, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
-        glClear(GL_DEPTH_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         triangle_shader->setVec3Uniform("inColour", triCol.x, triCol.y, triCol.z);
         glDrawArrays(GL_TRIANGLES, 0, 3);

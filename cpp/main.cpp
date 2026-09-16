@@ -40,7 +40,7 @@ int main(int, char **) {
 
     glViewport(0, 0, 800 * main_scale, 600 * main_scale);
     glfwSetFramebufferSizeCallback(window, onWindowResize);
-
+    
     GUIRender::Initialize(main_scale, window, glsl_version);
     GLRenderer::Initialize();
     GUIRender::SetShaderReloadCallback(GLRenderer::ReloadShaders);
