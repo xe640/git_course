@@ -2,6 +2,8 @@
 
 layout (std140) uniform sceneGlobal {
     mat4 projectionViewMat;
+    mat4 viewMat;
+    mat4 projMat;
 };
 
 uniform samplerBuffer instanceData;
@@ -16,9 +18,9 @@ void main()
     float rSign = (x % 2 == 1)? 1.0 : -1.0;
     float upSign = (x < 2)? 1.0 : -1.0;
 
-    emmission = texelFetch(instanceData, id + 2);
-    vec3 normal = texelFetch(instanceData, id + 1).xyz;
-    vec4 posSize = texelFetch(instanceData, id);
+    emmission = texelFetch(instanceData, id * 3 + 2);
+    vec3 normal = texelFetch(instanceData, id * 3 + 1).xyz;
+    vec4 posSize = texelFetch(instanceData, id * 3);
     vec3 up, right;
     vec3 referenceAxis = vec3(0.0, 1.0, 0.0);
 
