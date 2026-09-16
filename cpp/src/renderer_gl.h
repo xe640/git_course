@@ -22,11 +22,13 @@ public:
 private:
     static Shader* triangle_shader;
     static Shader* plane_shader;
+    static Shader* line_shader;
     static glm::mat4 projection_matrix;
     static glm::mat4 projection_view_matrix;
     static GLuint VAO;
     static GLuint scene_data_ubo;
     static texture_buffer plane_data_buffer;
+    static texture_buffer line_data_buffer;
     static render_list* r_list;
     static void gen_tbo(texture_buffer* tbuf, int size);
 };

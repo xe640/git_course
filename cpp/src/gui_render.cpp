@@ -39,6 +39,8 @@ void GUIRender::Initialize(float mainScale, GLFWwindow* window, const char* glsl
 
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init(glslVersion);
+
+    update_cam_basis();
 }
 
 void GUIRender::UpdateInput(GLFWwindow* window){
@@ -69,17 +71,7 @@ void GUIRender::UpdateInput(GLFWwindow* window){
             data.cameraYawPitch.y = glm::clamp(data.cameraYawPitch.y, -89.9f, 89.9f);
             last_mouse_press = true;
 
-            const float pitch_cos = glm::cos(glm::radians(data.cameraYawPitch.y));
-            const glm::vec3 cam_fwd = glm::vec3(
-                glm::sin(glm::radians(data.cameraYawPitch.x)) * pitch_cos,
-                glm::sin(glm::radians(data.cameraYawPitch.y)),
-                glm::cos(glm::radians(data.cameraYawPitch.x)) * pitch_cos
-            );
-
-            glm::vec3 cam_up, cam_right;
-            cam_right = glm::normalize(glm::cross(cam_fwd, glm::vec3(0.0f, 1.0f, 0.0f)));
-            cam_up = glm::normalize(glm::cross(cam_right, cam_fwd));
-            cam_basis = glm::mat3(cam_right, cam_up, cam_fwd);
+            update_cam_basis();
         } else {
             glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
             if(last_mouse_press) {
@@ -155,4 +147,18 @@ glm::mat4x4 GUIRender::getViewTransform(){
     viewMatrix[3][3] = 1.0f;
     viewMatrix = glm::translate(viewMatrix, -cam_pos);
     return viewMatrix;
+}
+
+void GUIRender::update_cam_basis(){
+    const float pitch_cos = glm::cos(glm::radians(data.cameraYawPitch.y));
+            const glm::vec3 cam_fwd = glm::vec3(
+                glm::sin(glm::radians(data.cameraYawPitch.x)) * pitch_cos,
+                glm::sin(glm::radians(data.cameraYawPitch.y)),
+                glm::cos(glm::radians(data.cameraYawPitch.x)) * pitch_cos
+            );
+
+            glm::vec3 cam_up, cam_right;
+            cam_right = glm::normalize(glm::cross(cam_fwd, glm::vec3(0.0f, 1.0f, 0.0f)));
+            cam_up = glm::normalize(glm::cross(cam_right, cam_fwd));
+            cam_basis = glm::mat3(cam_right, cam_up, cam_fwd);
 }

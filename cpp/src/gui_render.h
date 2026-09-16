@@ -37,6 +37,7 @@ private:
     static glm::mat3 cam_basis;
     static float delta_time;
     static double last_frame;
+    static void update_cam_basis();
 public:
     static gui_data data;
 
