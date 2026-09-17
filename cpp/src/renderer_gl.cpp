@@ -10,14 +10,12 @@ texture_buffer GLRenderer::line_data_buffer;
 scene_global_data GLRenderer::global_data = {glm::mat4(1.0f), glm::mat4(1.0f), glm::mat4(1.0f)};
 render_list* GLRenderer::r_list = nullptr;
 
-void gen_list(render_list* list);
-
 void GLRenderer::Initialize(){
     triangle_shader = new Shader("../shaders/triangleVS.glsl", "../shaders/triangleFS.glsl");
     plane_shader = new Shader("../shaders/planeVS.glsl", "../shaders/planeFS.glsl");
     line_shader = new Shader("../shaders/lineVS.glsl", "../shaders/lineFS.glsl");
     r_list = new render_list();
-    gen_list(r_list);
+    RenderListGen::generateDemoRenderList(r_list);
 
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
@@ -118,70 +116,4 @@ void GLRenderer::gen_tbo(texture_buffer* tbuf, int size){
     glGenTextures(1, &tbuf->texture);
     glBindTexture(GL_TEXTURE_BUFFER, tbuf->texture);
     glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, tbuf->tbo);
-}
-
-uint32_t pcg_hash(uint32_t input) //from https://www.reedbeta.com/blog/hash-functions-for-gpu-rendering/
-{
-    uint32_t state = input * 747796405u + 2891336453u;
-    uint32_t word = ((state >> ((state >> 28u) + 4u)) ^ state) * 277803737u;
-    return (word >> 22u) ^ word;
-}
-
-float rand_f(uint32_t* state) {
-    *state = pcg_hash(*state);
-    return (float)*state / 134217728.0f - 16.0f;
-}
-
-glm::vec3 rand_vec3(uint32_t* state){
-    float x, y, z;
-    x = rand_f(state);
-    y = rand_f(state);
-    z = rand_f(state);
-
-    return glm::vec3(x, y, z);
-}
-
-void gen_list(render_list* list) { // random generation test code for debugging purposes
-    for (int i = 0; i < 15; i++)
-    {
-        glm::vec3 pos = glm::vec3(i - (i % 6) * 2, (i % 3) * 3, i % 7);
-
-        plane testPlane = {
-            pos, (float)(i % 5) * 0.2f + 0.2f,
-            glm::vec3(0.0f),
-            glm::vec4(glm::sin((double)i * 0.2), glm::cos(i), 0.3f, 1.0f)
-        };
-
-        if (i < 7) {
-            RenderListGen::renderPlaneTowards(list, testPlane, glm::vec3(0.0f));
-        } else {
-            RenderListGen::renderPlaneWire(list, RenderListGen::renderPlaneTowards(nullptr, testPlane, glm::vec3(0.0f)), 0.1f);
-        }
-    }
-
-    uint32_t rand = pcg_hash(82187u);
-
-    for (int32_t i = 0; i < 30; i++)
-    {
-        glm::vec3 pos1, pos2;
-        float s1, s2;
-        glm::vec4 col1, col2;
-
-        pos1 = rand_vec3(&rand);
-        pos2 = rand_vec3(&rand);
-        s1 = rand_f(&rand) * 0.0312f + 0.5f;
-        s2 = rand_f(&rand) * 0.0312f + 0.5f;
-        col1 = glm::vec4(rand_vec3(&rand) * 0.0312f + 0.5f, 1.0);
-        col2 = glm::vec4(rand_vec3(&rand) * 0.0312f + 0.5f, 1.0);
-        
-        line testLine = {
-            pos1, s1,
-            pos2, s2,
-            col1, col2
-        };
-
-        RenderListGen::renderLine(list, testLine);
-    }
-    
-    
 }

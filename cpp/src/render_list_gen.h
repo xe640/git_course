@@ -48,4 +48,5 @@ public:
     static plane renderPlaneTowards(render_list* list, plane toAdd, glm::vec3 targetPos);
     static void renderPlaneWire(render_list* list, plane toAdd, float lineThickness);
     static void renderAABB(render_list* list, AABB toAdd, glm::vec4 colour, float lineThickness);
+    static void generateDemoRenderList(render_list* list);
 };
