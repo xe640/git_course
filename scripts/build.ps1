@@ -31,7 +31,7 @@ if ($src.Count -eq 0) {
 $gpp = Get-Command g++ -ErrorAction SilentlyContinue
 
 if (-not $gpp) {
-	Write-Error "g++ not found on PATH. Please install MinGW/MSYS2 or add g++ to PATH."
+	Write-Error "g++ not found on PATH. Please install MinGW/MSYS2 or add g++ to PATH, or run the provided setup script."
 	exit 2
 }
 
