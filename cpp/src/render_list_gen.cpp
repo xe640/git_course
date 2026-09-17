@@ -66,10 +66,14 @@ void RenderListGen::renderPlaneWire(render_list* list, plane toAdd, float lineTh
     max = planeUp + planeRight;
     max *= toAdd.size * 0.5f;
     min = -max;
+    min += toAdd.position;
+    max += toAdd.position;
 
     corner1 = planeUp - planeRight;
     corner1 *= toAdd.size * 0.5f;
     corner2 = -corner1;
+    corner1 += toAdd.position;
+    corner2 += toAdd.position;
 
     glm::vec4 col = toAdd.colour;
     renderLine(list, {

@@ -152,7 +152,11 @@ void gen_list(render_list* list) { // random generation test code for debugging 
             glm::vec4(glm::sin((double)i * 0.2), glm::cos(i), 0.3f, 1.0f)
         };
 
-        RenderListGen::renderPlaneTowards(list, testPlane, glm::vec3(0.0f));
+        if (i < 7) {
+            RenderListGen::renderPlaneTowards(list, testPlane, glm::vec3(0.0f));
+        } else {
+            RenderListGen::renderPlaneWire(list, RenderListGen::renderPlaneTowards(nullptr, testPlane, glm::vec3(0.0f)), 0.1f);
+        }
     }
 
     uint32_t rand = pcg_hash(82187u);
