@@ -38,6 +38,7 @@ private:
     static float delta_time;
     static double last_frame;
     static void update_cam_basis();
+    static bool use_alternate_controls;
 public:
     static gui_data data;
 

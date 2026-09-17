@@ -12,6 +12,7 @@ glm::vec3 GUIRender::cam_pos = glm::vec3(0.0f, 0.0f, 0.0f);
 glm::mat3 GUIRender::cam_basis = glm::mat3(1.0f);
 float GUIRender::delta_time = 0.0f;
 double GUIRender::last_frame = 0.0f;
+bool GUIRender::use_alternate_controls = false;
 
 gui_data GUIRender::data = {
     ImVec2(.0f, .0f),
@@ -82,14 +83,27 @@ void GUIRender::UpdateInput(GLFWwindow* window){
         glfwGetCursorPos(window, &last_mouse_x, &last_mouse_y);
     }
     if(!io->WantCaptureKeyboard) {
-        glm::vec3 moveDir = glm::vec3(
-            (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS? 1.0f : 0.0f)
-            - (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS? 1.0f : 0.0f),
-            (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS? 1.0f : 0.0f)
-            - (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS? 1.0f : 0.0f),
-            (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS? 1.0f : 0.0f)
-            - (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS? 1.0f : 0.0f)
-        );
+        glm::vec3 moveDir;
+        if (!use_alternate_controls) {
+            moveDir = glm::vec3(
+                (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS? 1.0f : 0.0f)
+                - (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS? 1.0f : 0.0f),
+                (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS? 1.0f : 0.0f)
+                - (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS? 1.0f : 0.0f),
+                (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS? 1.0f : 0.0f)
+                - (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS? 1.0f : 0.0f)
+            );
+        } else {
+            moveDir = glm::vec3(
+                (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS? 1.0f : 0.0f)
+                - (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS? 1.0f : 0.0f),
+                (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS? 1.0f : 0.0f)
+                - (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS? 1.0f : 0.0f),
+                (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS? 1.0f : 0.0f)
+                - (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS? 1.0f : 0.0f)
+            );
+        }
+        
         if(glm::length(moveDir) > 0.1f) {
             moveDir = glm::normalize(moveDir);
         }
@@ -122,6 +136,8 @@ void GUIRender::DrawGUI(){
         if(ImGui::Button("Reload shaders") && shader_reload_callback != nullptr) {
             shader_reload_callback();
         }
+
+        ImGui::Checkbox("Use alternate control scheme", &use_alternate_controls);
 
         ImGui::End();
     }
