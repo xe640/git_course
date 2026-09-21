@@ -23,10 +23,10 @@ struct world_node
 
 class WorldStorage{
 private:
-    std::list<world_node*> nodes;
-    void addToNode(world_node* node, plane surface, world_element element);
+    static std::list<world_node*> nodes;
+    static void addToNode(world_node* node, plane surface, world_element element);
 public:
-    void addElement(plane surface, world_element element);
+    static void addElement(plane surface, world_element element);
 };
 
 #endif
