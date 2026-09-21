@@ -1,3 +1,6 @@
+#ifndef RENDER_LIST_GEN
+#define RENDER_LIST_GEN
+
 #include "../include/GLM/glm.hpp"
 #include "../include/GLM/gtc/matrix_transform.hpp"
 #include "../include/GLM/gtc/type_ptr.hpp"
@@ -50,3 +53,4 @@ public:
     static void renderAABB(render_list* list, AABB toAdd, glm::vec4 colour, float lineThickness);
     static void generateDemoRenderList(render_list* list);
 };
+#endif
