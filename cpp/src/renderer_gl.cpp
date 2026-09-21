@@ -117,3 +117,7 @@ void GLRenderer::gen_tbo(texture_buffer* tbuf, int size){
     glBindTexture(GL_TEXTURE_BUFFER, tbuf->texture);
     glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, tbuf->tbo);
 }
+
+void GLRenderer::updateRenderList(const std::list<const world_node*>& world_nodes){
+    RenderListGen::generateListFromWorld(r_list, world_nodes);
+}

@@ -1,20 +1,10 @@
 #ifndef RENDER_LIST_GEN
 #define RENDER_LIST_GEN
 
-#include "../include/GLM/glm.hpp"
-#include "../include/GLM/gtc/matrix_transform.hpp"
-#include "../include/GLM/gtc/type_ptr.hpp"
-#include "world_storage.h"
+#include "scene_types.h"
 #include <list>
 
 #define MAX_RENDER_LIST_ELEMENTS 4096
-
-struct plane {
-    glm::vec3 position;
-    float size;
-    glm::vec3 normal;
-    glm::vec4 colour;
-};
 
 struct line {
     glm::vec3 position1;
