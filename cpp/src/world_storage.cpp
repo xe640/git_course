@@ -22,3 +22,11 @@ void WorldStorage::addElement(plane surface, world_element element){
 
     addToNode(nodes.back(), surface, element);
 }
+
+const std::list<const world_node*>& WorldStorage::getNodes(){
+    std::list<const world_node*> view;
+    for (world_node* n : nodes) {
+        view.push_back(n);
+    }
+    return view;
+}

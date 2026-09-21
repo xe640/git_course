@@ -27,6 +27,7 @@ private:
     static void addToNode(world_node* node, plane surface, world_element element);
 public:
     static void addElement(plane surface, world_element element);
+    static const std::list<const world_node*>& getNodes();
 };
 
 #endif

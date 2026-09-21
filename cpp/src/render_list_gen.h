@@ -4,6 +4,8 @@
 #include "../include/GLM/glm.hpp"
 #include "../include/GLM/gtc/matrix_transform.hpp"
 #include "../include/GLM/gtc/type_ptr.hpp"
+#include "world_storage.h"
+#include <list>
 
 #define MAX_RENDER_LIST_ELEMENTS 4096
 
@@ -52,5 +54,6 @@ public:
     static void renderPlaneWire(render_list* list, plane toAdd, float lineThickness);
     static void renderAABB(render_list* list, AABB toAdd, glm::vec4 colour, float lineThickness);
     static void generateDemoRenderList(render_list* list);
+    static void generateListFromWorld(render_list* list, const std::list<const world_node*>& world_nodes);
 };
 #endif
