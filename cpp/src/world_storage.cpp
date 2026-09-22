@@ -3,7 +3,7 @@
 std::list<world_node*> WorldStorage::nodes;
 
 void WorldStorage::addToNode(world_node* node, plane surface, world_element element){
-    if (node->num_elements == MAX_NODE_ELEMENTS) {
+    if (node->num_elements == MAX_LEAF_NODE_ELEMENTS) {
         return;
     }
 
@@ -16,7 +16,7 @@ void WorldStorage::addElement(plane surface, world_element element){
     if(nodes.empty()){
         nodes.push_back(new world_node());
     }
-    if(nodes.back()->num_elements == MAX_NODE_ELEMENTS){
+    if(nodes.back()->num_elements == MAX_LEAF_NODE_ELEMENTS){
         nodes.push_back(new world_node());
     }
 
