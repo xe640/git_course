@@ -20,6 +20,9 @@ void RenderListGen::renderPlane(render_list* list, plane toAdd){
         list->planeList = new plane_list();
         list->planeList->numPlanes = 0;
     }
+    if(list->planeList->numPlanes == MAX_RENDER_LIST_ELEMENTS){
+        return;
+    }
 
     list->planeList->values[list->planeList->numPlanes * 3] = glm::vec4(toAdd.position, toAdd.size);
     list->planeList->values[list->planeList->numPlanes * 3 + 1] = glm::vec4(toAdd.normal, 0.0f);
@@ -34,6 +37,9 @@ void RenderListGen::renderLine(render_list* list, line toAdd){
     if(list->lineList == nullptr) {
         list->lineList = new line_list();
         list->lineList->numLines = 0;
+    }
+    if(list->planeList->numPlanes == MAX_RENDER_LIST_ELEMENTS){
+        return;
     }
 
     list->lineList->values[list->lineList->numLines * 4] = glm::vec4(toAdd.position1, toAdd.size1);
