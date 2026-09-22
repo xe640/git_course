@@ -16,6 +16,7 @@ bool GUIRender::use_alternate_controls = false;
 bool GUIRender::plane_placed = false;
 float GUIRender::plane_size = 1.0f;
 float GUIRender::plane_cooldown = 0.0f;
+float GUIRender::plane_cooldown_max = 0.3f;
 
 gui_data GUIRender::data = {
     ImVec2(.0f, .0f),
@@ -115,7 +116,7 @@ void GUIRender::UpdateInput(GLFWwindow* window){
         ) {
             
             plane_placed = false;
-            plane_cooldown = 0.5f;
+            plane_cooldown = plane_cooldown_max;
 
             glm::vec3 camFwd = cam_basis * glm::vec3(0.0, 0.0, -1.0);
 
@@ -163,6 +164,7 @@ void GUIRender::DrawGUI(){
             data.cameraYawPitch = {0.0f, 0.0f};
             cam_pos = glm::vec3(0.0f);
             update_cam_basis();
+            data.cameraChanged = true;
         }
         ImGui::DragFloat("Look sensitivity", &look_sensitivity, 0.01f);
         if(ImGui::DragFloat("Fov", &data.fov, 1.0f, 30.0f, 160.0f)) {
@@ -182,6 +184,8 @@ void GUIRender::DrawGUI(){
         if(ImGui::Button("Add plane")){
            plane_placed = true;
         }
+
+        ImGui::DragFloat("Plane placement cooldown", &plane_cooldown_max, 0.001f);
 
         ImGui::Checkbox("Use alternate control scheme", &use_alternate_controls);
 

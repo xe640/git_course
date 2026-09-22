@@ -43,6 +43,7 @@ private:
     static bool plane_placed;
     static float plane_size;
     static float plane_cooldown;
+    static float plane_cooldown_max;
 public:
     static gui_data data;
 
