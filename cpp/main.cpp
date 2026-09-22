@@ -9,6 +9,8 @@
 
 #include "src/renderer_gl.h"
 #include "src/gui_render.h"
+#include "src/render_list_gen.h"
+#include "src/world_storage.h"
 
 void onWindowResize(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
@@ -49,6 +51,8 @@ int main(int, char **) {
     {
         GUIRender::UpdateInput(window);
         GUIRender::DrawGUI();
+
+        GLRenderer::updateRenderList(WorldStorage::getNodesConst());
         
         GLRenderer::Render(GUIRender::data, GUIRender::getViewTransform);
 

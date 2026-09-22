@@ -25,6 +25,7 @@ public:
     static void ReloadShaders();
     static void Render(gui_data state, glm::mat4(*getViewMat)());
     static void CleanUp();
+    static void updateRenderList(const std::list<const world_node*>& world_nodes);
 private:
     static Shader* triangle_shader;
     static Shader* plane_shader;

@@ -11,6 +11,7 @@
 #include "../include/GLM/glm.hpp"
 #include "../include/GLM/gtc/matrix_transform.hpp"
 #include "../include/GLM/gtc/type_ptr.hpp"
+#include "world_storage.h"
 
 struct gui_data {
     ImVec2 cameraYawPitch;
@@ -39,6 +40,9 @@ private:
     static double last_frame;
     static void update_cam_basis();
     static bool use_alternate_controls;
+    static bool plane_placed;
+    static float plane_size;
+    static float plane_cooldown;
 public:
     static gui_data data;
 

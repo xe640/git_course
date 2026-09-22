@@ -13,6 +13,9 @@ glm::mat3 GUIRender::cam_basis = glm::mat3(1.0f);
 float GUIRender::delta_time = 0.0f;
 double GUIRender::last_frame = 0.0f;
 bool GUIRender::use_alternate_controls = false;
+bool GUIRender::plane_placed = false;
+float GUIRender::plane_size = 1.0f;
+float GUIRender::plane_cooldown = 0.0f;
 
 gui_data GUIRender::data = {
     ImVec2(.0f, .0f),
@@ -51,6 +54,7 @@ void GUIRender::UpdateInput(GLFWwindow* window){
     last_frame = currentFrame;
 
     data.windowChanged = false;
+    data.cameraChanged = false;
     int windowWidth, windowHeight;
     glfwGetFramebufferSize(window, &windowWidth, &windowHeight);
     glm::vec2 newAspect = glm::vec2((float)windowWidth, (float)windowHeight);
@@ -103,12 +107,42 @@ void GUIRender::UpdateInput(GLFWwindow* window){
                 - (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS? 1.0f : 0.0f)
             );
         }
+
+        if (
+            ((glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS && use_alternate_controls)
+            || (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS && !use_alternate_controls)
+            || plane_placed) && plane_cooldown <= 0.0f
+        ) {
+            
+            plane_placed = false;
+            plane_cooldown = 0.5f;
+
+            glm::vec3 camFwd = cam_basis * glm::vec3(0.0, 0.0, -1.0);
+
+            plane surface = {
+                camFwd * 3.0f + cam_pos, plane_size,
+                -camFwd,
+                glm::vec4(1.0f)
+            };
+
+            world_element element = {
+                glm::vec3(data.triColour.x, data.triColour.y, data.triColour.z),
+                glm::vec3(0.6f)
+            };
+
+            WorldStorage::addElement(surface, element);
+        }
         
         if(glm::length(moveDir) > 0.1f) {
             moveDir = glm::normalize(moveDir);
+            data.cameraChanged = true;
         }
         moveDir *= move_speed * delta_time;
         cam_pos += cam_basis * moveDir;
+    }
+
+    if(plane_cooldown > 0.0f){
+        plane_cooldown -= delta_time;
     }
 }
 
@@ -136,10 +170,17 @@ void GUIRender::DrawGUI(){
         }
         ImGui::DragFloat("Move speed", &move_speed);
         ImGui::ColorEdit3("Background colour", (float*)&data.clearColour);
+
         ImGui::ColorEdit3("Triangle and plane colour", (float*)&data.triColour);
 
         if(ImGui::Button("Reload shaders") && shader_reload_callback != nullptr) {
             shader_reload_callback();
+        }
+
+        ImGui::DragFloat("Plane size", &plane_size, 0.01f);
+
+        if(ImGui::Button("Add plane")){
+           plane_placed = true;
         }
 
         ImGui::Checkbox("Use alternate control scheme", &use_alternate_controls);
