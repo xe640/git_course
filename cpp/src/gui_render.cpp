@@ -125,13 +125,18 @@ void GUIRender::DrawGUI(){
             data.cameraYawPitch.x, data.cameraYawPitch.y,
             cam_pos.x, cam_pos.y, cam_pos.z
         );
+        if(ImGui::Button("Reset camera")){
+            data.cameraYawPitch = {0.0f, 0.0f};
+            cam_pos = glm::vec3(0.0f);
+            update_cam_basis();
+        }
         ImGui::DragFloat("Look sensitivity", &look_sensitivity, 0.01f);
         if(ImGui::DragFloat("Fov", &data.fov, 1.0f, 30.0f, 160.0f)) {
             data.windowChanged = true;
         }
         ImGui::DragFloat("Move speed", &move_speed);
         ImGui::ColorEdit3("Background colour", (float*)&data.clearColour);
-        ImGui::ColorEdit3("Triangle colour", (float*)&data.triColour);
+        ImGui::ColorEdit3("Triangle and plane colour", (float*)&data.triColour);
 
         if(ImGui::Button("Reload shaders") && shader_reload_callback != nullptr) {
             shader_reload_callback();
