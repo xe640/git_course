@@ -19,10 +19,10 @@ struct world_element {
 };
 
 struct tree_node{
-    int16_t parent; // -1 for null
-    int16_t left;
-    int16_t right;
-    int16_t element;
+    int16_t parent = -1; // -1 for null
+    int16_t left = -1;
+    int16_t right = -1;
+    int16_t element = -1;
 };
 
 #define MAX_LEAF_NODE_ELEMENTS 64
@@ -37,7 +37,20 @@ struct world_node
     int16_t root;
 
     void insert(world_element element, plane surface){
+        if (num_nodes == TREE_NODE_COUNT) {
+            return;
+        }
 
+        int16_t neighbour = closest(surface.position);
+        if (neighbour == -1) {
+            num_nodes++;
+            elements[0] = element;
+            surfaces[0] = surface;
+            nodes[0] = {-1, -1, -1, 0};
+            root = 0;
+            return;
+        }
+        tree_node nParent = nodes[nodes[neighbour].parent];
     }
 
     void remove(int16_t id){
