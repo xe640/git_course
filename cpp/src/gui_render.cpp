@@ -25,7 +25,9 @@ gui_data GUIRender::data = {
     110.0f,
     glm::vec2(1.0f, 1.0f),
     false,
-    true
+    true,
+    false,
+    glm::vec3(0.0f)
 };
 
 void GUIRender::Initialize(float mainScale, GLFWwindow* window, const char* glslVersion){
@@ -122,7 +124,7 @@ void GUIRender::UpdateInput(GLFWwindow* window){
 
             plane surface = {
                 camFwd * 3.0f + cam_pos, plane_size,
-                -camFwd,
+                -camFwd, 1.0f,
                 glm::vec4(1.0f)
             };
 
@@ -140,6 +142,7 @@ void GUIRender::UpdateInput(GLFWwindow* window){
         }
         moveDir *= move_speed * delta_time;
         cam_pos += cam_basis * moveDir;
+        data.camPos = cam_pos;
     }
 
     if(plane_cooldown > 0.0f){
@@ -163,6 +166,7 @@ void GUIRender::DrawGUI(){
         if(ImGui::Button("Reset camera")){
             data.cameraYawPitch = {0.0f, 0.0f};
             cam_pos = glm::vec3(0.0f);
+            data.camPos = cam_pos;
             update_cam_basis();
             data.cameraChanged = true;
         }
@@ -188,6 +192,7 @@ void GUIRender::DrawGUI(){
         ImGui::DragFloat("Plane placement cooldown", &plane_cooldown_max, 0.001f);
 
         ImGui::Checkbox("Use alternate control scheme", &use_alternate_controls);
+        ImGui::Checkbox("Demo scene", &data.demoRender);
 
         ImGui::End();
     }

@@ -4,6 +4,7 @@ layout (std140) uniform sceneGlobal {
     mat4 projectionViewMat;
     mat4 viewMat;
     mat4 projMat;
+    vec3 camPos;
 };
 
 uniform samplerBuffer instanceData;

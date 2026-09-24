@@ -25,7 +25,7 @@ public:
     static void ReloadShaders();
     static void Render(gui_data state, glm::mat4(*getViewMat)());
     static void CleanUp();
-    static void updateRenderList(const std::list<const world_node*>& world_nodes);
+    static void updateRenderList(const std::list<const world_node*>& world_nodes, gui_data state);
 private:
     static Shader* triangle_shader;
     static Shader* plane_shader;
@@ -37,6 +37,7 @@ private:
     static render_list* r_list;
     static void gen_tbo(texture_buffer* tbuf, int size);
     static scene_global_data global_data;
+    static bool demo_is_generated;
 };
 
 #endif

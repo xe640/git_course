@@ -21,6 +21,8 @@ struct gui_data {
     glm::vec2 windowAspect;
     bool windowChanged;
     bool cameraChanged;
+    bool demoRender;
+    glm::vec3 camPos;
 };
 
 class GUIRender

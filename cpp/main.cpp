@@ -52,7 +52,7 @@ int main(int, char **) {
         GUIRender::UpdateInput(window);
         GUIRender::DrawGUI();
 
-        GLRenderer::updateRenderList(WorldStorage::getNodesConst());
+        GLRenderer::updateRenderList(WorldStorage::getNodesConst(), GUIRender::data);
         
         GLRenderer::Render(GUIRender::data, GUIRender::getViewTransform);
 

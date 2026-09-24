@@ -4,6 +4,7 @@ layout (std140) uniform sceneGlobal {
     mat4 projectionViewMat;
     mat4 viewMat;
     mat4 projMat;
+    vec3 camPos;
 };
 
 uniform samplerBuffer instanceData;
@@ -23,8 +24,8 @@ void main()
     vec4 posSize = texelFetch(instanceData, id * 3);
     vec3 up, right;
 
-    vec3 camFwd = vec4(0.0, 0.0, 1.0, 1.0) * viewMat;
-    normalCone.xyz = dot(camFwd.xyz, normalCone.xyz) < normalCone.w ? camFwd.xyz : normalCone.xyz;
+    vec3 dirToCam = normalize(camPos - posSize.xyz);
+    normalCone.xyz = dot(dirToCam, normalCone.xyz) > normalCone.w ? dirToCam : normalCone.xyz;
     vec3 referenceAxis = vec3(0.0, 1.0, 0.0);
 
     if (abs(normalCone.y) > 0.9) {

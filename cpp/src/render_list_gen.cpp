@@ -140,7 +140,7 @@ void RenderListGen::generateDemoRenderList(render_list* list) { // random genera
         plane testPlane = {
             pos, (float)(i % 5) * 0.2f + 0.2f,
             glm::vec3(0.0f),
-            rand_f(&rand) * 0.015625f + 0.75f,
+            rand_f(&rand) * 0.03125f + 0.5f,
             glm::vec4(glm::sin((double)i * 0.2), glm::cos(i), 0.3f, 1.0f)
         };
 
