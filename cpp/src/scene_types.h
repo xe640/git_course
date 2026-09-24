@@ -10,6 +10,7 @@ struct plane {
     glm::vec3 position;
     float size;
     glm::vec3 normal;
+    float coneSize;
     glm::vec4 colour;
 };
 

@@ -25,7 +25,7 @@ void RenderListGen::renderPlane(render_list* list, plane toAdd){
     }
 
     list->planeList->values[list->planeList->numPlanes * 3] = glm::vec4(toAdd.position, toAdd.size);
-    list->planeList->values[list->planeList->numPlanes * 3 + 1] = glm::vec4(toAdd.normal, 0.0f);
+    list->planeList->values[list->planeList->numPlanes * 3 + 1] = glm::vec4(toAdd.normal, toAdd.coneSize);
     list->planeList->values[list->planeList->numPlanes * 3 + 2] = toAdd.colour;
     list->planeList->numPlanes++;
 }
@@ -131,6 +131,7 @@ void RenderListGen::generateDemoRenderList(render_list* list) { // random genera
     }
 
     clearList(list);
+    uint32_t rand = pcg_hash(82187u);
 
     for (int i = 0; i < 15; i++)
     {
@@ -139,6 +140,7 @@ void RenderListGen::generateDemoRenderList(render_list* list) { // random genera
         plane testPlane = {
             pos, (float)(i % 5) * 0.2f + 0.2f,
             glm::vec3(0.0f),
+            rand_f(&rand) * 0.015625f + 0.75f,
             glm::vec4(glm::sin((double)i * 0.2), glm::cos(i), 0.3f, 1.0f)
         };
 
@@ -148,8 +150,6 @@ void RenderListGen::generateDemoRenderList(render_list* list) { // random genera
             RenderListGen::renderPlaneWire(list, RenderListGen::renderPlaneTowards(nullptr, testPlane, glm::vec3(0.0f)), 0.1f);
         }
     }
-
-    uint32_t rand = pcg_hash(82187u);
 
     for (int32_t i = 0; i < 30; i++)
     {

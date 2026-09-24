@@ -19,17 +19,20 @@ void main()
     float upSign = (x < 2)? 1.0 : -1.0;
 
     emmission = texelFetch(instanceData, id * 3 + 2);
-    vec3 normal = texelFetch(instanceData, id * 3 + 1).xyz;
+    vec4 normalCone = texelFetch(instanceData, id * 3 + 1);
     vec4 posSize = texelFetch(instanceData, id * 3);
     vec3 up, right;
+
+    vec3 camFwd = vec4(0.0, 0.0, 1.0, 1.0) * viewMat;
+    normalCone.xyz = dot(camFwd.xyz, normalCone.xyz) < normalCone.w ? camFwd.xyz : normalCone.xyz;
     vec3 referenceAxis = vec3(0.0, 1.0, 0.0);
 
-    if (abs(normal.y) > 0.9) {
+    if (abs(normalCone.y) > 0.9) {
         referenceAxis = vec3(0.0, 0.0, 1.0);
     }
 
-    right = normalize(cross(referenceAxis, normal));
-    up = normalize(cross(normal, right));
+    right = normalize(cross(referenceAxis, normalCone.xyz));
+    up = normalize(cross(normalCone.xyz, right));
 
     vec3 pos = (up * upSign + right * rSign) * posSize.w * 0.5 + posSize.xyz;
 
