@@ -18,6 +18,13 @@ struct world_element {
     glm::vec3 albedo;
 };
 
+struct tree_node{
+    int16_t parent; // -1 for null
+    int16_t left;
+    int16_t right;
+    int16_t element;
+};
+
 #define MAX_LEAF_NODE_ELEMENTS 64
 #define TREE_NODE_COUNT (2 * MAX_LEAF_NODE_ELEMENTS - 1)
 
@@ -25,18 +32,38 @@ struct world_node
 {
     world_element elements[TREE_NODE_COUNT];
     plane surfaces[TREE_NODE_COUNT];
-    uint8_t num_elements;
+    tree_node nodes[TREE_NODE_COUNT];
+    uint16_t num_nodes;
+    int16_t root;
 
     void insert(world_element element, plane surface){
 
     }
 
-    void remove(uint8_t id){
+    void remove(int16_t id){
 
     }
 
-    uint8_t closestLod(glm::vec3 pos, uint8_t lod){
+    int16_t closest(glm::vec3 pos, uint16_t maxDepth = 65535){
+        if (num_nodes == 0) {
+            return -1;
+        }
 
+        tree_node current = nodes[root];
+        int16_t id = root;
+        uint16_t depth = 0;
+
+        while (current.left != -1 && current.right != -1 && depth < maxDepth)
+        {
+            glm::vec3 deltaRight = surfaces[nodes[current.right].element].position - pos;
+            glm::vec3 deltaLeft = surfaces[nodes[current.left].element].position - pos;
+
+            id = glm::dot(deltaRight, deltaRight) < glm::dot(deltaLeft, deltaLeft) ? current.right : current.left;
+            current =  nodes[id];
+            depth++;
+        }
+
+        return id;
     }
 
     std::vector<plane> getRenderListLod(uint8_t lod){
