@@ -130,10 +130,11 @@ void GUIRender::UpdateInput(GLFWwindow* window){
 
             world_element element = {
                 glm::vec3(data.triColour.x, data.triColour.y, data.triColour.z),
-                glm::vec3(0.6f)
+                glm::vec3(0.6f),
+                surface
             };
 
-            WorldStorage::addElement(surface, element);
+            WorldStorage::addElement(element);
         }
         
         if(glm::length(moveDir) > 0.1f) {

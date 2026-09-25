@@ -7,9 +7,9 @@
 class WorldStorage{
 private:
     static std::list<world_node*> nodes;
-    static void addToNode(world_node* node, plane surface, world_element element);
+    static void add_to_node(world_node* node, world_element element);
 public:
-    static void addElement(plane surface, world_element element);
+    static void addElement(world_element element);
     static const std::list<world_node*>& getNodes();
     static std::list<const world_node*> getNodesConst();
 };

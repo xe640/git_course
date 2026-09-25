@@ -178,7 +178,7 @@ void RenderListGen::generateListFromWorld(render_list* list, const std::list<con
     RenderListGen::clearList(list);
     for(const world_node* node : world_nodes){
         for(uint8_t i = 0; i < node->num_elements; i++){
-            plane toAdd = node->surfaces[i];
+            plane toAdd = node->elements[i].surface;
             toAdd.colour = glm::vec4(node->elements[i].emission, 1.0);
             renderPlane(list, toAdd);
         }
