@@ -122,8 +122,10 @@ void GUIRender::UpdateInput(GLFWwindow* window){
 
             glm::vec3 camFwd = cam_basis * glm::vec3(0.0, 0.0, -1.0);
 
+            glm::vec3 planePos = camFwd * 2.5f * plane_size + cam_pos;
+
             plane surface = {
-                camFwd * 3.0f + cam_pos, plane_size,
+                planePos, plane_size,
                 -camFwd, 1.0f,
                 glm::vec4(1.0f)
             };
