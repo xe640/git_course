@@ -130,5 +130,6 @@ void GLRenderer::updateRenderList(const std::list<const world_node*>& world_node
     } else {
         demo_is_generated = false;
         RenderListGen::generateListFromWorld(r_list, world_nodes);
+        RenderListGen::addFromUIList(r_list, state.ui_lines);
     }
 }

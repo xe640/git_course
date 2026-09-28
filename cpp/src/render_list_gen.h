@@ -44,6 +44,7 @@ struct AABB {
 class RenderListGen {
 public:
     static void clearList(render_list* list);
+    static void clearList(line_list_ui* list);
     static void renderPlane(render_list* list, plane toAdd);
     static void renderLine(render_list* list, line toAdd);
     static void renderLine(line_list_ui* list, line toAdd);

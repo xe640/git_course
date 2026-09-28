@@ -12,6 +12,14 @@ void RenderListGen::clearList(render_list* list){
     }
 }
 
+void RenderListGen::clearList(line_list_ui* list){
+    if(list == nullptr) {
+        return;
+    }
+    list->numLines = 0;
+}
+
+
 void RenderListGen::renderPlane(render_list* list, plane toAdd){
     if(list == nullptr) { //this check can be removed if list building is slow
         return;
@@ -79,7 +87,7 @@ static void renderPlaneWireInternal(ListT* list, plane toAdd, float lineThicknes
               "RenderPlaneInternal: unsupported type, render_list or line_list_ui are only supported");
     glm::vec3 planeUp, planeRight;
 
-    if (glm::abs(toAdd.normal.y) > 0.9f) {
+    if (glm::abs(toAdd.normal.y) < 0.9f) {
         planeRight = glm::normalize(glm::cross(toAdd.normal, glm::vec3(0.0f, 1.0f, 0.0f)));
         planeUp = glm::cross(planeRight, toAdd.normal);
     } else {
@@ -193,6 +201,15 @@ void RenderListGen::generateListFromWorld(render_list* list, const std::list<con
 }
 
 void RenderListGen::addFromUIList(render_list* list, line_list_ui* toAdd){
+    if (toAdd == nullptr || list == nullptr) {
+        return;
+    }
+
+    if(list->lineList == nullptr) {
+        list->lineList = new line_list();
+        list->lineList->numLines = 0;
+    }
+
     uint32_t numToAdd = toAdd->numLines;
     uint32_t availableSpace = MAX_RENDER_LIST_ELEMENTS - list->lineList->numLines;
     numToAdd = numToAdd < availableSpace ? numToAdd : availableSpace;

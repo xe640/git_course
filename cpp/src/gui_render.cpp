@@ -48,6 +48,9 @@ void GUIRender::Initialize(float mainScale, GLFWwindow* window, const char* glsl
     ImGui_ImplOpenGL3_Init(glslVersion);
 
     update_cam_basis();
+
+    data.ui_lines = new line_list_ui();
+    data.ui_lines->numLines = 0;
 }
 
 void GUIRender::UpdateInput(GLFWwindow* window){
@@ -65,6 +68,8 @@ void GUIRender::UpdateInput(GLFWwindow* window){
         data.windowChanged = true;
         data.windowAspect = newAspect;
     }
+
+    RenderListGen::clearList(data.ui_lines);
 
     if(!io->WantCaptureMouse) {
         int mouseClickState = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
@@ -111,22 +116,23 @@ void GUIRender::UpdateInput(GLFWwindow* window){
             );
         }
 
+        glm::vec3 camFwd = cam_basis * glm::vec3(0.0, 0.0, -1.0);
+
+        plane surface = {
+            camFwd * 3.0f + cam_pos, plane_size,
+            -camFwd, 1.0f,
+            glm::vec4(1.0f)
+        };
+
+        RenderListGen::renderPlaneWire(data.ui_lines, surface, 0.05);
+
         if (
             ((glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS && use_alternate_controls)
             || (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS && !use_alternate_controls)
             || plane_placed) && plane_cooldown <= 0.0f
         ) {
-            
             plane_placed = false;
             plane_cooldown = plane_cooldown_max;
-
-            glm::vec3 camFwd = cam_basis * glm::vec3(0.0, 0.0, -1.0);
-
-            plane surface = {
-                camFwd * 3.0f + cam_pos, plane_size,
-                -camFwd, 1.0f,
-                glm::vec4(1.0f)
-            };
 
             world_element element = {
                 glm::vec3(data.triColour.x, data.triColour.y, data.triColour.z),
@@ -212,6 +218,10 @@ void GUIRender::CleanUp(){
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext(context);
+    if (data.ui_lines != nullptr) {
+        free(data.ui_lines);
+        data.ui_lines = nullptr;
+    }
 }
 
 glm::mat4x4 GUIRender::getViewTransform(){
