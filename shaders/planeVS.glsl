@@ -28,7 +28,7 @@ void main()
     normalCone.xyz = dot(dirToCam, normalCone.xyz) > normalCone.w ? dirToCam : normalCone.xyz;
     vec3 referenceAxis = vec3(0.0, 1.0, 0.0);
 
-    if (abs(normalCone.y) > 0.9) {
+    if (abs(normalCone.y) > 0.99) {
         referenceAxis = vec3(0.0, 0.0, 1.0);
     }
 

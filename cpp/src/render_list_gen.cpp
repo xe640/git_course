@@ -87,7 +87,7 @@ static void renderPlaneWireInternal(ListT* list, plane toAdd, float lineThicknes
               "RenderPlaneInternal: unsupported type, render_list or line_list_ui are only supported");
     glm::vec3 planeUp, planeRight;
 
-    if (glm::abs(toAdd.normal.y) < 0.9f) {
+    if (glm::abs(toAdd.normal.y) < 0.99f) {
         planeRight = glm::normalize(glm::cross(toAdd.normal, glm::vec3(0.0f, 1.0f, 0.0f)));
         planeUp = glm::cross(planeRight, toAdd.normal);
     } else {

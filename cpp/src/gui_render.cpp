@@ -126,7 +126,7 @@ void GUIRender::UpdateInput(GLFWwindow* window){
             glm::vec4(1.0f)
         };
 
-        RenderListGen::renderPlaneWire(data.ui_lines, surface, 0.05);
+        RenderListGen::renderPlaneWire(data.ui_lines, surface, 0.01 * plane_size);
 
         if (
             ((glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS && use_alternate_controls)
