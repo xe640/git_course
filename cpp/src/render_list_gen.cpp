@@ -12,6 +12,14 @@ void RenderListGen::clearList(render_list* list){
     }
 }
 
+void RenderListGen::clearList(line_list_ui* list){
+    if(list == nullptr) {
+        return;
+    }
+    list->numLines = 0;
+}
+
+
 void RenderListGen::renderPlane(render_list* list, plane toAdd){
     if(list == nullptr) { //this check can be removed if list building is slow
         return;
@@ -38,7 +46,7 @@ void RenderListGen::renderLine(render_list* list, line toAdd){
         list->lineList = new line_list();
         list->lineList->numLines = 0;
     }
-    if(list->planeList->numPlanes == MAX_RENDER_LIST_ELEMENTS){
+    if(list->lineList->numLines == MAX_RENDER_LIST_ELEMENTS){
         return;
     }
 
@@ -49,6 +57,22 @@ void RenderListGen::renderLine(render_list* list, line toAdd){
     list->lineList->numLines++;
 }
 
+void RenderListGen::renderLine(line_list_ui* list, line toAdd){
+    if(list == nullptr) {
+        return;
+    }
+  
+    if(list->numLines == MAX_UI_RENDER_LIST_ELEMENTS){
+        return;
+    }
+
+    list->values[list->numLines * 4] = glm::vec4(toAdd.position1, toAdd.size1);
+    list->values[list->numLines * 4 + 1] = glm::vec4(toAdd.position2, toAdd.size2);
+    list->values[list->numLines * 4 + 2] = toAdd.colour1;
+    list->values[list->numLines * 4 + 3] = toAdd.colour2;
+    list->numLines++;
+}
+
 plane RenderListGen::renderPlaneTowards(render_list* list, plane toAdd, glm::vec3 targetPos){
     toAdd.normal = glm::normalize(targetPos - toAdd.position);
     if(list != nullptr) {
@@ -57,51 +81,42 @@ plane RenderListGen::renderPlaneTowards(render_list* list, plane toAdd, glm::vec
     return toAdd;
 }
 
-void RenderListGen::renderPlaneWire(render_list* list, plane toAdd, float lineThickness){
+template <typename ListT>
+static void renderPlaneWireInternal(ListT* list, plane toAdd, float lineThickness) {
+    static_assert(std::is_same_v<ListT, render_list> || std::is_same_v<ListT, line_list_ui>,
+              "RenderPlaneInternal: unsupported type, render_list or line_list_ui are only supported");
     glm::vec3 planeUp, planeRight;
 
-    if(glm::abs(toAdd.normal.y) > 0.9f ) {
+    if (glm::abs(toAdd.normal.y) < 0.9f) {
         planeRight = glm::normalize(glm::cross(toAdd.normal, glm::vec3(0.0f, 1.0f, 0.0f)));
         planeUp = glm::cross(planeRight, toAdd.normal);
     } else {
-        planeUp = glm::normalize(glm::cross(glm::vec3(0.0f, 0.0f , 1.0f), toAdd.normal));
+        planeUp = glm::normalize(glm::cross(glm::vec3(0.0f, 0.0f, 1.0f), toAdd.normal));
         planeRight = glm::cross(toAdd.normal, planeUp);
     }
 
     glm::vec3 min, max, corner1, corner2;
-    max = planeUp + planeRight;
-    max *= toAdd.size * 0.5f;
-    min = -max;
-    min += toAdd.position;
+    max = (planeUp + planeRight) * (toAdd.size * 0.5f);
+    min = -max + toAdd.position;
     max += toAdd.position;
 
-    corner1 = planeUp - planeRight;
-    corner1 *= toAdd.size * 0.5f;
-    corner2 = -corner1;
+    corner1 = (planeUp - planeRight) * (toAdd.size * 0.5f);
+    corner2 = -corner1 + toAdd.position;
     corner1 += toAdd.position;
-    corner2 += toAdd.position;
 
     glm::vec4 col = toAdd.colour;
-    renderLine(list, {
-        min, lineThickness,
-        corner1, lineThickness,
-        col, col
-    });
-    renderLine(list, {
-        corner1, lineThickness,
-        max, lineThickness,
-        col, col
-    });
-    renderLine(list, {
-        max, lineThickness,
-        corner2, lineThickness,
-        col, col
-    });
-    renderLine(list, {
-        corner2, lineThickness,
-        min, lineThickness,
-        col, col
-    });
+    RenderListGen::renderLine(list, { min,     lineThickness, corner1, lineThickness, col, col });
+    RenderListGen::renderLine(list, { corner1, lineThickness, max,     lineThickness, col, col });
+    RenderListGen::renderLine(list, { max,     lineThickness, corner2, lineThickness, col, col });
+    RenderListGen::renderLine(list, { corner2, lineThickness, min,     lineThickness, col, col });
+}
+
+void RenderListGen::renderPlaneWire(render_list* list, plane toAdd, float lineThickness) {
+    renderPlaneWireInternal(list, toAdd, lineThickness);
+}
+
+void RenderListGen::renderPlaneWire(line_list_ui* list, plane toAdd, float lineThickness) {
+    renderPlaneWireInternal(list, toAdd, lineThickness);
 }
 
 uint32_t pcg_hash(uint32_t input) //from https://www.reedbeta.com/blog/hash-functions-for-gpu-rendering/
@@ -183,4 +198,28 @@ void RenderListGen::generateListFromWorld(render_list* list, const std::list<con
             renderPlane(list, toAdd);
         }
     }
+}
+
+void RenderListGen::addFromUIList(render_list* list, line_list_ui* toAdd){
+    if (toAdd == nullptr || list == nullptr) {
+        return;
+    }
+
+    if(list->lineList == nullptr) {
+        list->lineList = new line_list();
+        list->lineList->numLines = 0;
+    }
+
+    uint32_t numToAdd = toAdd->numLines;
+    uint32_t availableSpace = MAX_RENDER_LIST_ELEMENTS - list->lineList->numLines;
+    numToAdd = numToAdd < availableSpace ? numToAdd : availableSpace;
+    uint32_t startIndex = list->lineList->numLines;
+    for (uint32_t i = 0; i < numToAdd; i++)
+    {
+        list->lineList->values[(startIndex + i) * 4] = toAdd->values[i * 4];
+        list->lineList->values[(startIndex + i) * 4 + 1] = toAdd->values[i * 4 + 1];
+        list->lineList->values[(startIndex + i) * 4 + 2] = toAdd->values[i * 4 + 2];
+        list->lineList->values[(startIndex + i) * 4 + 3] = toAdd->values[i * 4 + 3];
+    }
+    list->lineList->numLines += numToAdd;
 }

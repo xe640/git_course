@@ -12,6 +12,7 @@
 #include "../include/GLM/gtc/matrix_transform.hpp"
 #include "../include/GLM/gtc/type_ptr.hpp"
 #include "world_storage.h"
+#include "render_list_gen.h"
 
 struct gui_data {
     ImVec2 cameraYawPitch;
@@ -23,6 +24,7 @@ struct gui_data {
     bool cameraChanged;
     bool demoRender;
     glm::vec3 camPos;
+    line_list_ui* ui_lines;
 };
 
 class GUIRender
