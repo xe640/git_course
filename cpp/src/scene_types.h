@@ -6,6 +6,8 @@
 #include "../include/GLM/gtc/type_ptr.hpp"
 #include <cstdint>
 
+#define EPSILON_ELEMENT_UNION 1e-5f
+
 struct plane {
     glm::vec3 position;
     float size;
@@ -24,7 +26,7 @@ inline float cosAPlusB(float cosA, float cosB){
 inline plane operator+(const plane& a, const plane& b){
     float areaA = a.size * a.size;
     float areaB = b.size * b.size;
-    float total = areaA + areaB + 0.00001f;
+    float total = areaA + areaB + EPSILON_ELEMENT_UNION;
     float coneAreaA = 2.0f * glm::pi<float>() * (1.0f - a.coneSize);
     float coneAreaB = 2.0f * glm::pi<float>() * (1.0f - b.coneSize);
 
@@ -38,7 +40,7 @@ inline plane operator+(const plane& a, const plane& b){
 
     return plane {
         (a.position * areaA + b.position * areaB) / total,
-        glm::sqrt(total - 0.00001f),
+        glm::sqrt(total - EPSILON_ELEMENT_UNION),
         midNormal,
         coneSize,
         (a.colour * areaA + b.colour * areaB) / total
@@ -54,7 +56,7 @@ struct world_element {
 inline world_element operator+(const world_element& a, const world_element& b){
     float areaA = a.surface.size * a.surface.size;
     float areaB = b.surface.size * b.surface.size;
-    float total = areaA + areaB + 0.00001f; // guard against divide by zero
+    float total = areaA + areaB + EPSILON_ELEMENT_UNION; // guard against divide by zero
     
     return world_element{
         (a.emission * areaA + b.emission * areaB) / total,
