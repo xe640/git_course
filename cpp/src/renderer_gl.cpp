@@ -80,10 +80,8 @@ void GLRenderer::Render(gui_data state, glm::mat4(*getViewMat)()){
     }
     
     if(plane_shader->CompilationSucceeded() && r_list->planeList != nullptr && r_list->planeList->numPlanes > 0) {
-        glBindBuffer(GL_TEXTURE_BUFFER, plane_data_buffer.tbo);
-        glBufferSubData(GL_TEXTURE_BUFFER, 0, sizeof(glm::vec4) * 3 * r_list->planeList->numPlanes, r_list->planeList->values);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_BUFFER, plane_data_buffer.texture);
+        fill_tbo(plane_data_buffer, r_list->planeList->numPlanes * 3, r_list->planeList->values);
+        bind_tbo(plane_data_buffer, GL_TEXTURE0);
         plane_shader->use();
         plane_shader->setTexUniform("instanceData", 0);
 
@@ -91,10 +89,8 @@ void GLRenderer::Render(gui_data state, glm::mat4(*getViewMat)()){
     }
     
     if(line_shader->CompilationSucceeded() && r_list->lineList != nullptr && r_list->lineList->numLines > 0) {
-        glBindBuffer(GL_TEXTURE_BUFFER, line_data_buffer.tbo);
-        glBufferSubData(GL_TEXTURE_BUFFER, 0, sizeof(glm::vec4) * 4 * r_list->lineList->numLines, r_list->lineList->values);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_BUFFER, line_data_buffer.texture);
+        fill_tbo(line_data_buffer, r_list->lineList->numLines * 4, r_list->lineList->values);
+        bind_tbo(line_data_buffer, GL_TEXTURE0);
         line_shader->use();
         line_shader->setTexUniform("instanceData", 0);
 
@@ -119,6 +115,16 @@ void GLRenderer::gen_tbo(texture_buffer* tbuf, int size){
     glGenTextures(1, &tbuf->texture);
     glBindTexture(GL_TEXTURE_BUFFER, tbuf->texture);
     glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, tbuf->tbo);
+}
+
+void GLRenderer::fill_tbo(texture_buffer tbuf, int size, const GLvoid *data){
+    glBindBuffer(GL_TEXTURE_BUFFER, tbuf.tbo);
+    glBufferSubData(GL_TEXTURE_BUFFER, 0, sizeof(glm::vec4) * size, data);
+}
+
+void GLRenderer::bind_tbo(texture_buffer tbuf, GLint textureSlot){
+    glActiveTexture(textureSlot);
+    glBindTexture(GL_TEXTURE_BUFFER, tbuf.texture);
 }
 
 void GLRenderer::updateRenderList(const std::list<const world_node*>& world_nodes, gui_data state){

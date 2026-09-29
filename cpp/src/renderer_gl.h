@@ -36,6 +36,8 @@ private:
     static texture_buffer line_data_buffer;
     static render_list* r_list;
     static void gen_tbo(texture_buffer* tbuf, int size);
+    static void fill_tbo(texture_buffer tbuf, int size, const GLvoid *data​);
+    static void bind_tbo(texture_buffer tbuf, GLint textureSlot);
     static scene_global_data global_data;
     static bool demo_is_generated;
 };
