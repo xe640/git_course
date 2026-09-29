@@ -8,6 +8,7 @@
 
 #define EPSILON_ELEMENT_UNION 1e-5f
 
+#define PLANE_TYPE_SIZE_VEC4 3
 struct plane {
     glm::vec3 position;
     float size;

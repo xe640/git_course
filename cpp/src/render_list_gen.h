@@ -7,6 +7,7 @@
 #define MAX_RENDER_LIST_ELEMENTS 4096
 #define MAX_UI_RENDER_LIST_ELEMENTS 512
 
+#define LINE_TYPE_SIZE_VEC4 4
 struct line {
     glm::vec3 position1;
     float size1;

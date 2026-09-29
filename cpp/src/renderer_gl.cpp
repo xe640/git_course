@@ -80,7 +80,7 @@ void GLRenderer::Render(gui_data state, glm::mat4(*getViewMat)()){
     }
     
     if(plane_shader->CompilationSucceeded() && r_list->planeList != nullptr && r_list->planeList->numPlanes > 0) {
-        fill_tbo(plane_data_buffer, r_list->planeList->numPlanes * 3, r_list->planeList->values);
+        fill_tbo(plane_data_buffer, r_list->planeList->numPlanes * PLANE_TYPE_SIZE_VEC4, r_list->planeList->values);
         bind_tbo(plane_data_buffer, GL_TEXTURE0);
         plane_shader->use();
         plane_shader->setTexUniform("instanceData", 0);
@@ -89,7 +89,7 @@ void GLRenderer::Render(gui_data state, glm::mat4(*getViewMat)()){
     }
     
     if(line_shader->CompilationSucceeded() && r_list->lineList != nullptr && r_list->lineList->numLines > 0) {
-        fill_tbo(line_data_buffer, r_list->lineList->numLines * 4, r_list->lineList->values);
+        fill_tbo(line_data_buffer, r_list->lineList->numLines * LINE_TYPE_SIZE_VEC4, r_list->lineList->values);
         bind_tbo(line_data_buffer, GL_TEXTURE0);
         line_shader->use();
         line_shader->setTexUniform("instanceData", 0);
