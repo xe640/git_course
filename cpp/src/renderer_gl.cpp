@@ -5,8 +5,11 @@ Shader* GLRenderer::plane_shader = nullptr;
 Shader* GLRenderer::line_shader = nullptr;
 GLuint GLRenderer::VAO;
 GLuint GLRenderer::scene_data_ubo;
-texture_buffer GLRenderer::plane_data_buffer;
-texture_buffer GLRenderer::line_data_buffer;
+texture_buffer GLRenderer::plane_data_buffer1;
+texture_buffer GLRenderer::line_data_buffer1;
+texture_buffer GLRenderer::plane_data_buffer2;
+texture_buffer GLRenderer::line_data_buffer2;
+bool GLRenderer::active_tbo_set = false;
 scene_global_data GLRenderer::global_data = {glm::mat4(1.0f), glm::mat4(1.0f), glm::mat4(1.0f)};
 render_list* GLRenderer::r_list = nullptr;
 bool GLRenderer::demo_is_generated = false;
@@ -25,8 +28,17 @@ void GLRenderer::Initialize(){
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
     glBindBufferBase(GL_UNIFORM_BUFFER, 0, scene_data_ubo);
 
-    gen_tbo(&plane_data_buffer, sizeof(glm::vec4) * 3 * MAX_RENDER_LIST_ELEMENTS);
-    gen_tbo(&line_data_buffer, sizeof(glm::vec4) * 4 * MAX_RENDER_LIST_ELEMENTS);
+    gen_tbo(&plane_data_buffer1, sizeof(glm::vec4) * 3 * MAX_RENDER_LIST_ELEMENTS);
+    gen_tbo(&line_data_buffer1, sizeof(glm::vec4) * 4 * MAX_RENDER_LIST_ELEMENTS);
+    gen_tbo(&plane_data_buffer2, sizeof(glm::vec4) * 3 * MAX_RENDER_LIST_ELEMENTS);
+    gen_tbo(&line_data_buffer2, sizeof(glm::vec4) * 4 * MAX_RENDER_LIST_ELEMENTS);
+
+    RenderListGen::generateDemoRenderList(r_list);
+    fill_tbo(plane_data_buffer1, r_list->planeList->numPlanes * 3, r_list->planeList->values);
+    fill_tbo(line_data_buffer1, r_list->lineList->numLines * 4, r_list->lineList->values);
+    fill_tbo(plane_data_buffer2, r_list->planeList->numPlanes * 3, r_list->planeList->values);
+    fill_tbo(line_data_buffer2, r_list->lineList->numLines * 4, r_list->lineList->values);
+
     triangle_shader->bindUBO("sceneGlobal", 0);
     plane_shader->bindUBO("sceneGlobal", 0);
     line_shader->bindUBO("sceneGlobal", 0);
@@ -78,10 +90,21 @@ void GLRenderer::Render(gui_data state, glm::mat4(*getViewMat)()){
         triangle_shader->setVec3Uniform("inColour", triCol.x, triCol.y, triCol.z);
         glDrawArrays(GL_TRIANGLES, 0, 3);
     }
+
+    if (active_tbo_set) {
+        fill_tbo(plane_data_buffer1, r_list->planeList->numPlanes * PLANE_TYPE_SIZE_VEC4, r_list->planeList->values);
+        fill_tbo(line_data_buffer1, r_list->lineList->numLines * LINE_TYPE_SIZE_VEC4, r_list->lineList->values);
+    } else {
+        fill_tbo(plane_data_buffer2, r_list->planeList->numPlanes * PLANE_TYPE_SIZE_VEC4, r_list->planeList->values);
+        fill_tbo(line_data_buffer2, r_list->lineList->numLines * LINE_TYPE_SIZE_VEC4, r_list->lineList->values);
+    }
     
     if(plane_shader->CompilationSucceeded() && r_list->planeList != nullptr && r_list->planeList->numPlanes > 0) {
-        fill_tbo(plane_data_buffer, r_list->planeList->numPlanes * PLANE_TYPE_SIZE_VEC4, r_list->planeList->values);
-        bind_tbo(plane_data_buffer, GL_TEXTURE0);
+        if (active_tbo_set) {
+            bind_tbo(plane_data_buffer2, GL_TEXTURE0);
+        } else {
+            bind_tbo(plane_data_buffer1, GL_TEXTURE0);
+        }
         plane_shader->use();
         plane_shader->setTexUniform("instanceData", 0);
 
@@ -89,13 +112,18 @@ void GLRenderer::Render(gui_data state, glm::mat4(*getViewMat)()){
     }
     
     if(line_shader->CompilationSucceeded() && r_list->lineList != nullptr && r_list->lineList->numLines > 0) {
-        fill_tbo(line_data_buffer, r_list->lineList->numLines * LINE_TYPE_SIZE_VEC4, r_list->lineList->values);
-        bind_tbo(line_data_buffer, GL_TEXTURE0);
+        if (active_tbo_set) {
+            bind_tbo(line_data_buffer2, GL_TEXTURE0);
+        } else {
+            bind_tbo(line_data_buffer1, GL_TEXTURE0);
+        }
         line_shader->use();
         line_shader->setTexUniform("instanceData", 0);
 
         glDrawArrays(GL_TRIANGLE_STRIP, 0, r_list->lineList->numLines * 10 - 1);
     }
+
+    active_tbo_set = !active_tbo_set;
 }
 
 void GLRenderer::CleanUp(){
