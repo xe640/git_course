@@ -32,8 +32,11 @@ private:
     static Shader* line_shader;
     static GLuint VAO;
     static GLuint scene_data_ubo;
-    static texture_buffer plane_data_buffer;
-    static texture_buffer line_data_buffer;
+    static texture_buffer plane_data_buffer1;
+    static texture_buffer line_data_buffer1;
+    static texture_buffer plane_data_buffer2;
+    static texture_buffer line_data_buffer2;
+    static bool active_tbo_set;
     static render_list* r_list;
     static void gen_tbo(texture_buffer* tbuf, int size);
     static void fill_tbo(texture_buffer tbuf, int size, const GLvoid *data​);
