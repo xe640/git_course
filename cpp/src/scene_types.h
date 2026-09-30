@@ -48,25 +48,6 @@ inline plane operator+(const plane& a, const plane& b){
     };
 }
 
-struct world_element {
-    glm::vec3 emission;
-    glm::vec3 albedo;
-    plane surface;
-};
-
-
-inline world_element operator+(const world_element& a, const world_element& b){
-    float areaA = a.surface.size * a.surface.size;
-    float areaB = b.surface.size * b.surface.size;
-    float total = areaA + areaB + EPSILON_ELEMENT_UNION; // guard against divide by zero
-    
-    return world_element{
-        (a.emission * areaA + b.emission * areaB) / total,
-        (a.albedo   * areaA + b.albedo   * areaB) / total,
-        a.surface + b.surface
-    };
-}
-
 struct AABB {
     glm::vec3 min;
     glm::vec3 max;
@@ -74,6 +55,32 @@ struct AABB {
 
 inline AABB operator+(const AABB& a, const AABB&  b) {
     return AABB{glm::min(a.min, b.min), glm::max(a.max, b.max)};
+}
+
+struct world_element {
+    glm::vec3 emission;
+    glm::vec3 albedo;
+    plane surface;
+    AABB bounds;
+};
+
+inline world_element operator+(const world_element& a, const world_element& b){
+    float areaA = a.surface.size * a.surface.size;
+    float areaB = b.surface.size * b.surface.size;
+    float total = areaA + areaB + EPSILON_ELEMENT_UNION; // guard against divide by zero
+
+    AABB minBoundsA = AABB{a.surface.position - a.surface.size, a.surface.position + a.surface.size};
+    AABB boundsA = minBoundsA + a.bounds;
+
+    AABB minBoundsB = AABB{b.surface.position - b.surface.size, b.surface.position + b.surface.size};
+    AABB boundsB = minBoundsB + b.bounds;
+    
+    return world_element{
+        (a.emission * areaA + b.emission * areaB) / total,
+        (a.albedo   * areaA + b.albedo   * areaB) / total,
+        a.surface + b.surface,
+        boundsA + boundsB
+    };
 }
 
 struct tree_node{
