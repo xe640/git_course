@@ -66,6 +66,15 @@ inline world_element operator+(const world_element& a, const world_element& b){
     };
 }
 
+struct AABB {
+    glm::vec3 min;
+    glm::vec3 max;
+};
+
+inline AABB operator+(const AABB& a, const AABB&  b) {
+    return AABB{glm::min(a.min, b.min), glm::max(a.max, b.max)};
+}
+
 #define MAX_NODE_ELEMENTS 128
 
 struct world_node

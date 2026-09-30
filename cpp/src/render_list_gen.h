@@ -37,11 +37,6 @@ struct render_list {
     line_list* lineList;
 };
 
-struct AABB {
-    glm::vec3 min;
-    glm::vec3 max;
-};
-
 class RenderListGen {
 public:
     static void clearList(render_list* list);
