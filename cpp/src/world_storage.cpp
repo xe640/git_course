@@ -2,20 +2,21 @@
 
 std::list<world_node*> WorldStorage::nodes;
 
+
 void WorldStorage::add_to_node(world_node* node, world_element element){
-    if (node->num_elements == MAX_NODE_ELEMENTS) {
+    if (node->num_nodes == MAX_LEAF_NODE_ELEMENTS) {
         return;
     }
 
-    node->elements[node->num_elements] = element;
-    node->num_elements++;
+    node->elements[node->num_nodes] = element;
+    node->num_nodes++;
 }
 
 void WorldStorage::addElement(world_element element){
     if(nodes.empty()){
         nodes.push_back(new world_node());
     }
-    if(nodes.back()->num_elements == MAX_NODE_ELEMENTS){
+    if(nodes.back()->num_nodes == MAX_LEAF_NODE_ELEMENTS){
         nodes.push_back(new world_node());
     }
 
