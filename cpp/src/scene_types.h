@@ -54,7 +54,14 @@ inline plane operator+(const plane& a, const plane& b){
 struct world_element {
     glm::vec3 emission;
     glm::vec3 albedo;
+    float radius;
     plane surface;
+
+    float averageCoverage(){
+        float bound = glm::pi<float>() * radius * radius;
+        float cover = 1.0f - glm::exp(-surface.size * surface.size / bound);
+        return cover;
+    }
 };
 
 
@@ -64,10 +71,17 @@ inline world_element operator+(const world_element& a, const world_element& b){
     float total = areaA + areaB;
     float areaInverse = 1.0f / glm::max(EPSILON_ELEMENT_UNION, total);
     
+    plane newSurface = a.surface + b.surface;
+    float boundingRadius = glm::max(
+        glm::distance(a.surface.position, newSurface.position) + a.surface.size,
+        glm::distance(b.surface.position, newSurface.position) + b.surface.size
+    );
+
     return world_element{
         (a.emission * areaA + b.emission * areaB) * areaInverse,
         (a.albedo   * areaA + b.albedo   * areaB) * areaInverse,
-        a.surface + b.surface
+        boundingRadius,
+        newSurface
     };
 }
 
