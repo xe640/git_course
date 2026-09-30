@@ -110,11 +110,11 @@ struct world_node
         }
         tree_node nParent = nodes[nodes[neighbour].parent];
     }
-
+/*
     void remove(int16_t id){
 
     }
-
+*/
     int16_t closest(glm::vec3 pos, uint16_t maxDepth = 65535){
         if (num_nodes == 0) {
             return -1;
@@ -136,10 +136,11 @@ struct world_node
 
         return id;
     }
-
+/*
     std::vector<plane> getRenderListLod(uint8_t lod){
 
     }
+*/
 };
 
 #endif
