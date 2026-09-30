@@ -18,6 +18,7 @@ struct plane {
 };
 
 inline float cosAPlusB(float cosA, float cosB){
+    if (cosA + cosB < 0.0f) return -1.0f;   // A+B > pi
     float sinA, sinB;
     sinA = glm::sqrt(glm::max(0.0f, 1.0f - cosA * cosA));
     sinB = glm::sqrt(glm::max(0.0f, 1.0f - cosB * cosB));
@@ -27,9 +28,9 @@ inline float cosAPlusB(float cosA, float cosB){
 inline plane operator+(const plane& a, const plane& b){
     float areaA = a.size * a.size;
     float areaB = b.size * b.size;
-    float total = areaA + areaB + EPSILON_ELEMENT_UNION;
-    float coneAreaA = 2.0f * glm::pi<float>() * (1.0f - a.coneSize);
-    float coneAreaB = 2.0f * glm::pi<float>() * (1.0f - b.coneSize);
+    float total = areaA + areaB;
+    float coneAreaA = glm::max(2.0f * glm::pi<float>() * (1.0f - a.coneSize), EPSILON_ELEMENT_UNION);
+    float coneAreaB = glm::max(2.0f * glm::pi<float>() * (1.0f - b.coneSize), EPSILON_ELEMENT_UNION);
 
     glm::vec3 weightedNormal = a.normal * areaA * coneAreaA + b.normal * areaB * coneAreaB;
     float weightedLen = glm::length(weightedNormal);
@@ -39,12 +40,14 @@ inline plane operator+(const plane& a, const plane& b){
     float cosExtentB = cosAPlusB(glm::dot(midNormal, b.normal), b.coneSize);
     float coneSize = glm::clamp(cosExtentA + cosExtentB, -2.0f, 2.0f) * 0.5f; //average
 
+    float areaInverse = 1.0f / glm::max(EPSILON_ELEMENT_UNION, total);
+
     return plane {
-        (a.position * areaA + b.position * areaB) / total,
-        glm::sqrt(total - EPSILON_ELEMENT_UNION),
+        (a.position * areaA + b.position * areaB) * areaInverse,
+        glm::sqrt(total),
         midNormal,
         coneSize,
-        (a.colour * areaA + b.colour * areaB) / total
+        (a.colour * areaA + b.colour * areaB) * areaInverse
     };
 }
 
@@ -58,11 +61,12 @@ struct world_element {
 inline world_element operator+(const world_element& a, const world_element& b){
     float areaA = a.surface.size * a.surface.size;
     float areaB = b.surface.size * b.surface.size;
-    float total = areaA + areaB + EPSILON_ELEMENT_UNION; // guard against divide by zero
+    float total = areaA + areaB;
+    float areaInverse = 1.0f / glm::max(EPSILON_ELEMENT_UNION, total);
     
     return world_element{
-        (a.emission * areaA + b.emission * areaB) / total,
-        (a.albedo   * areaA + b.albedo   * areaB) / total,
+        (a.emission * areaA + b.emission * areaB) * areaInverse,
+        (a.albedo   * areaA + b.albedo   * areaB) * areaInverse,
         a.surface + b.surface
     };
 }
