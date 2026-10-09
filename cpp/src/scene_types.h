@@ -51,16 +51,33 @@ inline plane operator+(const plane& a, const plane& b){
     };
 }
 
+#define WORLD_ELEMENT_FLAG_LEAF_NODE 1
+#define WORLD_ELEMENT_FLAG_RIGHT_CHILD 2
+
 struct world_element {
     glm::vec3 emission;
     glm::vec3 albedo;
     float radius;
     plane surface;
+    uint16_t treeHeight;
+    uint16_t flags;
 
     float averageCoverage(){
         float bound = glm::pi<float>() * radius * radius;
         float cover = 1.0f - glm::exp(-surface.size * surface.size / bound);
         return cover;
+    }
+
+    inline int leftChild(){
+        return 1;
+    }
+
+    inline int rightChild(){
+        return 1 << treeHeight;
+    }
+
+    inline int parent(){
+        return (flags & WORLD_ELEMENT_FLAG_RIGHT_CHILD) ? -(1 << (treeHeight + 1)) : -1;
     }
 };
 
