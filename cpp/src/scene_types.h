@@ -62,7 +62,7 @@ struct world_element {
     uint16_t treeHeight;
     uint16_t flags;
 
-    float averageCoverage(){
+    inline float averageCoverage(){
         float bound = glm::pi<float>() * radius * radius;
         float cover = 1.0f - glm::exp(-surface.size * surface.size / bound);
         return cover;
@@ -78,6 +78,18 @@ struct world_element {
 
     inline int parent(){
         return (flags & WORLD_ELEMENT_FLAG_RIGHT_CHILD) ? -(1 << (treeHeight + 1)) : -1;
+    }
+
+    inline void addChild(){
+        treeHeight++;
+    }
+
+    inline void removeChild(){
+        treeHeight--;
+    }
+
+    inline bool isLeaf(){
+        return flags & WORLD_ELEMENT_FLAG_LEAF_NODE;
     }
 };
 
@@ -124,28 +136,13 @@ struct tree_node{
 struct world_node
 {
     world_element elements[TREE_NODE_COUNT];
-    plane surfaces[TREE_NODE_COUNT];
-    tree_node nodes[TREE_NODE_COUNT];
     uint16_t num_nodes;
     int16_t root;
-
-    void insert(world_element element, plane surface){
-        if (num_nodes == TREE_NODE_COUNT) {
-            return;
-        }
-
-        int16_t neighbour = closest(surface.position);
-        if (neighbour == -1) {
-            num_nodes++;
-            elements[0] = element;
-            surfaces[0] = surface;
-            nodes[0] = {-1, -1, -1, 0};
-            root = 0;
-            return;
-        }
-        tree_node nParent = nodes[nodes[neighbour].parent];
-    }
 /*
+    void insert(world_element element, plane surface){
+    
+    }
+
     void remove(int16_t id){
 
     }
@@ -155,17 +152,20 @@ struct world_node
             return -1;
         }
 
-        tree_node current = nodes[root];
+        world_element current = elements[root];
         int16_t id = root;
         uint16_t depth = 0;
 
-        while (current.left != -1 && current.right != -1 && depth < maxDepth)
+        while (!current.isLeaf() && depth < maxDepth)
         {
-            glm::vec3 deltaRight = surfaces[nodes[current.right].element].position - pos;
-            glm::vec3 deltaLeft = surfaces[nodes[current.left].element].position - pos;
+            int16_t leftID = id + current.leftChild();
+            int16_t rightID = id + current.rightChild();
 
-            id = glm::dot(deltaRight, deltaRight) < glm::dot(deltaLeft, deltaLeft) ? current.right : current.left;
-            current =  nodes[id];
+            glm::vec3 deltaRight = elements[rightID].surface.position - pos;
+            glm::vec3 deltaLeft = elements[leftID].surface.position - pos;
+
+            id = glm::dot(deltaRight, deltaRight) < glm::dot(deltaLeft, deltaLeft) ? rightID : leftID;
+            current = elements[id];
             depth++;
         }
 
