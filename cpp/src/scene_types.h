@@ -53,6 +53,7 @@ inline plane operator+(const plane& a, const plane& b){
 
 #define WORLD_ELEMENT_FLAG_LEAF_NODE 1
 #define WORLD_ELEMENT_FLAG_RIGHT_CHILD 2
+#define WORLD_ELEMENT_FLAG_EMPTY 4
 
 struct world_element {
     glm::vec3 emission;
@@ -60,7 +61,7 @@ struct world_element {
     float radius;
     plane surface;
     uint16_t treeHeight;
-    uint16_t flags;
+    uint16_t flags = WORLD_ELEMENT_FLAG_EMPTY;
 
     inline float averageCoverage(){
         float bound = glm::pi<float>() * radius * radius;
@@ -68,16 +69,25 @@ struct world_element {
         return cover;
     }
 
-    inline int leftChild(){
-        return 1;
+    inline int leftChild() const {
+        return -1;
     }
 
-    inline int rightChild(){
-        return 1 << treeHeight;
+    inline int rightChild() const {
+        return -(1 << treeHeight);
     }
 
-    inline int parent(){
-        return (flags & WORLD_ELEMENT_FLAG_RIGHT_CHILD) ? -(1 << (treeHeight + 1)) : -1;
+    inline int parent() const {
+        return (flags & WORLD_ELEMENT_FLAG_RIGHT_CHILD) ? (1 << (treeHeight + 1)) : 1;
+    }
+
+    inline int sibling() const {
+        const int s = (1 << (treeHeight + 1)) - 1;
+        return (flags & WORLD_ELEMENT_FLAG_RIGHT_CHILD) ? s : -s;
+    }
+
+    inline int size() const {
+        return -(1 << (treeHeight + 1)) + 1;
     }
 
     inline void addChild(){
@@ -88,8 +98,12 @@ struct world_element {
         treeHeight--;
     }
 
-    inline bool isLeaf(){
+    inline bool isLeaf() const {
         return flags & WORLD_ELEMENT_FLAG_LEAF_NODE;
+    }
+
+    inline bool isEmpty() const {
+        return flags & WORLD_ELEMENT_FLAG_EMPTY;
     }
 };
 
@@ -130,7 +144,7 @@ struct tree_node{
     int16_t element = -1;
 };
 
-#define MAX_LEAF_NODE_ELEMENTS 128
+#define MAX_LEAF_NODE_ELEMENTS 512
 #define TREE_NODE_COUNT (2 * MAX_LEAF_NODE_ELEMENTS - 1)
 
 struct world_node
@@ -138,25 +152,41 @@ struct world_node
     world_element elements[TREE_NODE_COUNT];
     uint16_t num_nodes;
     int16_t root;
-/*
-    void insert(world_element element, plane surface){
     
+    void insert(world_element element){
+        if (num_nodes == 0) {
+            elements[0] = element;
+            root = 0;
+            return;
+        }
+
+
     }
 
     void remove(int16_t id){
+        if (id == -1 || !elements[id].isLeaf()){
+            return;
+        }
+        elements[id].flags |= WORLD_ELEMENT_FLAG_EMPTY;
 
+        int16_t parent = id + elements[id].parent();
+        int16_t sibling = id + elements[id].sibling();
+        elements[parent] = elements[sibling];
+        elements[parent].addChild();
     }
-*/
-    int16_t closest(glm::vec3 pos, uint16_t maxDepth = 65535){
+
+    int16_t closest(glm::vec3 pos) const{
         if (num_nodes == 0) {
             return -1;
         }
 
         world_element current = elements[root];
-        int16_t id = root;
+        int32_t id = root;
         uint16_t depth = 0;
 
-        while (!current.isLeaf() && depth < maxDepth)
+        float best = INFINITY;
+
+        while (!current.isLeaf())
         {
             int16_t leftID = id + current.leftChild();
             int16_t rightID = id + current.rightChild();
@@ -164,15 +194,39 @@ struct world_node
             glm::vec3 deltaRight = elements[rightID].surface.position - pos;
             glm::vec3 deltaLeft = elements[leftID].surface.position - pos;
 
-            id = glm::dot(deltaRight, deltaRight) < glm::dot(deltaLeft, deltaLeft) ? rightID : leftID;
+            float distR = glm::dot(deltaRight, deltaRight); //squared distance
+            float distL = glm::dot(deltaLeft, deltaLeft); //squared distance
+
+            id = distR < distL ? rightID : leftID;
+            best = glm::min(distL, distR);
+
             current = elements[id];
             depth++;
         }
 
-        return id;
+        uint16_t bestID = id;
+        id = root;
+        best = glm::sqrt(best); //squared distance to actual distance
+
+        while(id > -1){
+            const world_element& node = elements[id];
+            float dist = glm::dot(node.surface.position - pos, node.surface.position - pos);
+            if (!node.isEmpty() && dist < (best + node.radius) * (best + node.radius)) { //check if node may contain better candidates
+                if (node.isLeaf()) {
+                    if (dist < best * best) {best = glm::sqrt(dist); bestID = id;}
+                    id += node.size(); //skip empty space after leaf
+                } else {
+                    id += node.leftChild();
+                }
+            } else {
+                id += node.size(); //prune subtree
+            }
+        }
+
+        return bestID;
     }
 /*
-    std::vector<plane> getRenderListLod(uint8_t lod){
+    std::vector<plane> getRenderListLod(uint8_t lod) const{
 
     }
 */
